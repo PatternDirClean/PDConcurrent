@@ -21,9 +21,9 @@
 可通过 **WIKI** 查看示例
 
 ## 分支说明
-[dev-master](https://gitee.com/PatternDirClean/PDConcurrent/tree/dev-master) :当前的开发分支，可以拿到最新的每夜版 jar
+dev-master：当前的开发分支，可以拿到最新的每夜版 jar
 
-[releases](https://gitee.com/PatternDirClean/PDConcurrent/tree/releases/) :当前发布分支，稳定版的源码
+releases：当前发布分支，稳定版的源码
 
 -------------------------------------------------------------------------------
 
