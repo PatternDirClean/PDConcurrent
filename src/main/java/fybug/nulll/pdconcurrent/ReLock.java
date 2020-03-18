@@ -43,7 +43,7 @@ class ReLock implements SyLock {
             LOCK.lock();
             return run.get();
         } finally {
-            LOCK.lock();
+            LOCK.unlock();
         }
     }
 
