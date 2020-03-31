@@ -7,13 +7,16 @@ import fybug.nulll.pdconcurrent.fun.tryRunnable;
 import fybug.nulll.pdconcurrent.fun.trySupplier;
 
 /**
- * 并发管理
- * <p>
+ * <h2>并发管理.</h2>
  * 通过使用接口运行的方式隐藏内部的并发管理方法<br/>
- * 让开发人员无需管理并发的具体方式
+ * 让开发人员无需管理并发的具体方式<br/>
+ * {@code **read()} 方法用于申请读取方法，{@code **write()} 用于申请写入方法，只有在使用读写锁实现 {@link RWLock} 才有区别。其余实现两个之间无区别<br/>
+ * {@code try**()} 类型的方法为可抛出异常的方法，可在传入的接口中抛出异常，但是需要指定异常的类型<br/>
+ * 使用 {@code new**Lock()} 的方法获取不同并发管理的实例<br/>
  *
  * @author fybug
  * @version 0.0.1
+ * @since PDConcurrent 0.0.1
  */
 public
 interface SyLock {
@@ -106,12 +109,15 @@ interface SyLock {
 
     /*--------------------------------------------------------------------------------------------*/
 
+    /** 获取传统并发实现 */
     static @NotNull
     ObjLock newObjLock() {return new ObjLock();}
 
+    /** 获取 Lock 实现 */
     static @NotNull
     ReLock newReLock() {return new ReLock();}
 
+    /** 获取读写锁实现 */
     static @NotNull
     RWLock newRWLock() {return new RWLock();}
 }

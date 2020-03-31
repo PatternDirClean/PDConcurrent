@@ -9,13 +9,32 @@ import fybug.nulll.pdconcurrent.fun.trySupplier;
 import lombok.Getter;
 
 /**
- * 使用 {@link ReentrantLock} 并发管理
+ * 使用 {@link ReentrantLock} 实现的并发管理
+ * <pre>使用并发管理：
+ *     public static
+ *     void main(String[] args) {
+ *         var lock = new ReLock();
+ *         lock.read(() -> System.out.println("asdas"));
+ *     }</pre>
+ * <pre>不使用：
+ *     public static
+ *     void main(String[] args) {
+ *         var lock = new ReentrantLock();
+ *         lock.lock();
+ *         try {
+ *             System.out.println("asdas");
+ *         } finally {
+ *             lock.unlock();
+ *         }
+ *     }</pre>
  *
  * @author fybug
  * @version 0.0.1
+ * @since PDConcurrent 0.0.1
  */
 public
 class ReLock implements SyLock {
+
     // 锁
     @Getter private final ReentrantLock LOCK;
 

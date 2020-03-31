@@ -7,14 +7,29 @@ import fybug.nulll.pdconcurrent.fun.trySupplier;
 import lombok.Getter;
 
 /**
- * 使用传统对象锁的并发管理
+ * <h2>使用传统并发管理的实现.</h2>
+ * <pre>使用并发管理：
+ *     public static
+ *     void main(String[] args) {
+ *         var lock = new ObjLock();
+ *         lock.read(() -> System.out.println("asd"));
+ *     }</pre>
+ * <pre>不使用：
+ *     public static
+ *     void main(String[] args) {
+ *         synchronized ( new Object() ){
+ *             System.out.println("asd");
+ *         }
+ *     }</pre>
  *
  * @author fybug
  * @version 0.0.1
+ * @since PDConcurrent 0.0.1
  */
 public
 class ObjLock implements SyLock {
-    // 对象锁
+
+    /** 锁定的对象 */
     @Getter final private Object LOCK;
 
     public
