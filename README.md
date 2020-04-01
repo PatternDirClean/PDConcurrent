@@ -2,6 +2,7 @@
 
 ![java library](https://img.shields.io/badge/type-Libary-gr.svg "type")
 ![JDK 13](https://img.shields.io/badge/JDK-13-green.svg "SDK")
+![Gradle 6.0.1](https://img.shields.io/badge/Gradle-6.0.1-04303b.svg "tool")
 ![Apache 2](https://img.shields.io/badge/license-Apache%202-blue.svg "License")
 
 -- [Java Doc](https://apidoc.gitee.com/PatternDirClean/PDConcurrent) --
@@ -10,7 +11,7 @@
 
 ## 简介
 
-轻量级并发管理工具库，可让开发人员省去处理并发的一些细节
+轻量级并发管理工具，可让开发人员省去处理并发的一些细节
 
 ## 使用方法
 请导入其 `jar` 文件,文件在 **发行版** 或项目的 **jar** 文件夹下可以找到
