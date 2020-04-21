@@ -2,7 +2,6 @@ package fybug.nulll.pdconcurrent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import fybug.nulll.pdconcurrent.fun.tryRunnable;
@@ -14,7 +13,7 @@ import fybug.nulll.pdconcurrent.fun.trySupplier;
  * 让开发人员无需管理并发的具体方式<br/>
  * {@code **read()} 方法用于申请读取方法，{@code **write()} 用于申请写入方法，只有在使用读写锁实现 {@link RWLock} 才有区别。其余实现两个之间无区别<br/>
  * {@code try**()} 类型的方法为可抛出异常的方法，可在传入的接口中抛出异常，但是需要指定异常的类型<br/>
- * 也可在该类方法中传入 catch 块和 finally 块的代码，随后将不会抛出异常。
+ * 也可在该类方法中传入 catch 块和 finally 块的代码，随后将不会抛出异常。发生异常后返回将会变为 {@code null}
  * <br/><br/>
  * 使用 {@code new**Lock()} 的方法获取不同并发管理的实例<br/>
  *
@@ -24,6 +23,7 @@ import fybug.nulll.pdconcurrent.fun.trySupplier;
  */
 public
 interface SyLock {
+
     /**
      * 申请并运行于读锁
      *
@@ -145,10 +145,7 @@ interface SyLock {
         tryread(ecla, () -> {
             run.run();
             return null;
-        }, (e) -> {
-            cate.accept(e);
-            return null;
-        }, () -> {});
+        }, cate, () -> {});
     }
 
     /**
@@ -167,10 +164,7 @@ interface SyLock {
         trywrite(ecla, () -> {
             run.run();
             return null;
-        }, (e) -> {
-            cate.accept(e);
-            return null;
-        }, () -> {});
+        }, cate, () -> {});
     }
 
     //------------------------------------
@@ -180,7 +174,7 @@ interface SyLock {
      *
      * @param ecla 异常的类
      * @param run  带返回的运行代码
-     * @param cate 带返回的异常处理代码
+     * @param cate 异常处理代码
      *
      * @return 接口生成的数据
      *
@@ -188,7 +182,7 @@ interface SyLock {
      */
     default
     <T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run,
-                                       @NotNull Function<E, T> cate)
+                                       @NotNull Consumer<E> cate)
     { return tryread(ecla, run, cate, () -> {}); }
 
     /**
@@ -196,7 +190,7 @@ interface SyLock {
      *
      * @param ecla 异常的类
      * @param run  带返回的运行代码
-     * @param cate 带返回的异常处理代码
+     * @param cate 异常处理代码
      *
      * @return 接口生成的数据
      *
@@ -204,7 +198,7 @@ interface SyLock {
      */
     default
     <T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run,
-                                        @NotNull Function<E, T> cate)
+                                        @NotNull Consumer<E> cate)
     { return trywrite(ecla, run, cate, () -> {}); }
 
     //----------------------------------------------------------------------------------------------
@@ -225,10 +219,7 @@ interface SyLock {
         tryread(ecla, () -> {
             run.run();
             return null;
-        }, (e) -> {
-            cate.accept(e);
-            return null;
-        }, finall);
+        }, cate, finall);
     }
 
     /**
@@ -247,10 +238,7 @@ interface SyLock {
         trywrite(ecla, () -> {
             run.run();
             return null;
-        }, (e) -> {
-            cate.accept(e);
-            return null;
-        }, finall);
+        }, cate, finall);
     }
 
     //------------------------------------
@@ -260,7 +248,7 @@ interface SyLock {
      *
      * @param ecla   异常的类
      * @param run    带返回的运行代码
-     * @param cate   带返回的异常处理代码
+     * @param cate   异常处理代码
      * @param finall finally 块处理代码
      *
      * @return 接口生成的数据
@@ -269,12 +257,13 @@ interface SyLock {
      */
     default
     <T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run,
-                                       @NotNull Function<E, T> cate, @NotNull Runnable finall)
+                                       @NotNull Consumer<E> cate, @NotNull Runnable finall)
     {
         try {
             return tryread(ecla, run);
         } catch ( Exception e ) {
-            return cate.apply((E) e);
+            cate.accept((E) e);
+            return null;
         } finally {
             finall.run();
         }
@@ -285,7 +274,7 @@ interface SyLock {
      *
      * @param ecla   异常的类
      * @param run    带返回的运行代码
-     * @param cate   带返回的异常处理代码
+     * @param cate   异常处理代码
      * @param finall finally 块处理代码
      *
      * @return 接口生成的数据
@@ -294,12 +283,13 @@ interface SyLock {
      */
     default
     <T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run,
-                                        @NotNull Function<E, T> cate, @NotNull Runnable finall)
+                                        @NotNull Consumer<E> cate, @NotNull Runnable finall)
     {
         try {
             return trywrite(ecla, run);
         } catch ( Exception e ) {
-            return cate.apply((E) e);
+            cate.accept((E) e);
+            return null;
         } finally {
             finall.run();
         }
