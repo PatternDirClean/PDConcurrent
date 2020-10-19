@@ -1,7 +1,7 @@
 # PDConcurrent
 
 ![java library](https://img.shields.io/badge/type-Libary-gr.svg "type")
-![JDK 13](https://img.shields.io/badge/JDK-13-green.svg "SDK")
+![JDK 14](https://img.shields.io/badge/JDK-14-green.svg "SDK")
 ![Gradle 6.0.1](https://img.shields.io/badge/Gradle-6.0.1-04303b.svg "tool")
 ![Apache 2](https://img.shields.io/badge/license-Apache%202-blue.svg "License")
 
@@ -11,9 +11,11 @@
 
 ## 简介
 
-轻量级并发管理工具，可让开发人员省去处理并发的一些细节
+java 轻量级并发管理工具，可让开发人员省去处理并发的一些细节。
 
-使用接口将运行的代码插入并发域中，并发域的管理由工具进行。
+接口统一采用读写锁规范，可使用接口中不同的工厂方法构造内部使用不同并发实现的管理工具。
+
+使用接口将运行的代码传入并发域中，可通过接口抛出异常与返回数据，亦可将 try 块中的代码通过接口的方式插入并发域中的 try 块中。
 
 ## 使用方法
 请导入其 `jar` 文件,文件在 **发行版** 或项目的 **jar** 文件夹下可以找到
