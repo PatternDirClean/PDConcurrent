@@ -1,8 +1,10 @@
+![logo](https://images.gitee.com/uploads/images/2020/1021/111720_af150200_2071767.png)
+
 # PDConcurrent
 
 ![java library](https://img.shields.io/badge/type-Libary-gr.svg "type")
 ![JDK 14](https://img.shields.io/badge/JDK-14-green.svg "SDK")
-![Gradle 6.0.1](https://img.shields.io/badge/Gradle-6.0.1-04303b.svg "tool")
+![Gradle 6.4.1](https://img.shields.io/badge/Gradle-6.4.1-04303b.svg "tool")
 ![Apache 2](https://img.shields.io/badge/license-Apache%202-blue.svg "License")
 
 -- [Java Doc](https://apidoc.gitee.com/PatternDirClean/PDConcurrent) --
