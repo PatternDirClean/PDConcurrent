@@ -98,7 +98,11 @@ try {
 ## 使用方法
 请导入其 `jar` 文件,文件在 **发行版** 或项目的 **jar** 文件夹下可以找到
 
-其中 ` PDConcurrent_all.jar` 是包含了源码的包
+> PDConcurrent.jar 为不包含源码的包
+>
+> PDConcurrent_all.jar 为包含了源码的包
+>
+> PDConcurrent_sources.jar 为仅包含源码的包
 
 **发行版中可以看到全部版本<br/>项目下的 jar 文件夹是当前最新的每夜版**
 
