@@ -1,9 +1,11 @@
 package fybug.nulll.pdconcurrent;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
+import fybug.nulll.pdconcurrent.e.LockType;
 import fybug.nulll.pdconcurrent.fun.tryRunnable;
 import fybug.nulll.pdconcurrent.fun.trySupplier;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -22,9 +24,36 @@ import jakarta.validation.constraints.NotNull;
  */
 public
 interface SyLock {
-	// todo 检查需要全局锁的工具的锁顺序
-	// todo 锁工具更新：可传入锁状态指定读锁写锁不上锁
-	// todo 锁工具更新：利用锁工具中的try减少代码中的try的数量
+
+	default
+	c lock(@NotNull LockType lockType) { return new c(this, lockType); }
+
+	default
+	void lock(@NotNull LockType lockType, @NotNull tryRunnable run) { lock(lockType, run, null, null); }
+
+	default
+	void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Consumer<Throwable> catchby,
+						@Nullable Runnable finaby)
+	{
+		lock(lockType, () -> {
+			run.run();
+			return null;
+		}, catchby == null ? null : e -> {
+			catchby.accept(e);
+			return null;
+		}, finaby == null ? null : _ -> {
+			finaby.run();
+			return null;
+		});
+	}
+
+	default
+	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run) { return lock(lockType, run, null, null); }
+
+	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+						 @Nullable Function<R, R> finaby);
+
+	//----------------------------------------------------------------------------------------------
 
 	/**
 	 * 申请并运行于读锁
@@ -32,27 +61,7 @@ interface SyLock {
 	 * @param run 运行代码
 	 */
 	default
-	void read(@NotNull Runnable run) {
-		read(() -> {
-			run.run();
-			return null;
-		});
-	}
-
-	/**
-	 * 申请并运行于写锁
-	 *
-	 * @param run 运行代码
-	 */
-	default
-	void write(@NotNull Runnable run) {
-		write(() -> {
-			run.run();
-			return null;
-		});
-	}
-
-	//------------------------------------
+	void read(@NotNull tryRunnable run) { lock(LockType.READ, run); }
 
 	/**
 	 * 申请并运行于读锁
@@ -61,7 +70,16 @@ interface SyLock {
 	 *
 	 * @return 接口生成的数据
 	 */
-	<T> T read(@NotNull Supplier<T> run);
+	default
+	<R> R read(@NotNull trySupplier<R> run) { return lock(LockType.READ, run); }
+
+	/**
+	 * 申请并运行于写锁
+	 *
+	 * @param run 运行代码
+	 */
+	default
+	void write(@NotNull tryRunnable run) { lock(LockType.WRITE, run); }
 
 	/**
 	 * 申请并运行于写锁
@@ -70,229 +88,26 @@ interface SyLock {
 	 *
 	 * @return 接口生成的数据
 	 */
-	<T> T write(@NotNull Supplier<T> run);
+	default
+	<R> R write(@NotNull trySupplier<R> run) { return lock(LockType.WRITE, run); }
 
 	//----------------------------------------------------------------------------------------------
 
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 */
 	default
-	<E extends Exception> void tryread(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run) throws E
-	{
-		tryread(ecla, () -> {
-			run.run();
-			return null;
-		});
-	}
+	void read(@NotNull tryRunnable run, @Nullable Consumer<Throwable> catchby, @Nullable Runnable finaby)
+	{ lock(LockType.READ, run, catchby, finaby); }
 
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 */
 	default
-	<E extends Exception> void trywrite(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run) throws E
-	{
-		trywrite(ecla, () -> {
-			run.run();
-			return null;
-		});
-	}
+	<R> R read(@NotNull trySupplier<R> run, @Nullable Function<Throwable, R> catchby, @Nullable Function<R, R> finaby)
+	{ return lock(LockType.READ, run, catchby, finaby); }
 
-	//------------------------------------
-
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  带返回的运行代码
-	 *
-	 * @return 接口生成的数据
-	 */
-	<T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E;
-
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  带返回的运行代码
-	 *
-	 * @return 接口生成的数据
-	 */
-	<T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E;
-
-	//----------------------------------------------------------------------------------------------
-
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @since SyLock 0.0.2
-	 */
 	default
-	<E extends Exception> void tryread(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run, @NotNull Consumer<E> cate)
-	{
-		tryread(ecla, () -> {
-			run.run();
-			return null;
-		}, cate, () -> {});
-	}
+	void write(@NotNull tryRunnable run, @Nullable Consumer<Throwable> catchby, @Nullable Runnable finaby)
+	{ lock(LockType.WRITE, run, catchby, finaby); }
 
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @since SyLock 0.0.2
-	 */
 	default
-	<E extends Exception> void trywrite(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run, @NotNull Consumer<E> cate)
-	{
-		trywrite(ecla, () -> {
-			run.run();
-			return null;
-		}, cate, () -> {});
-	}
-
-	//------------------------------------
-
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  带返回的运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @return 接口生成的数据
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run, @NotNull Consumer<E> cate)
-	{ return tryread(ecla, run, cate, () -> {}); }
-
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  带返回的运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @return 接口生成的数据
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run, @NotNull Consumer<E> cate)
-	{ return trywrite(ecla, run, cate, () -> {}); }
-
-	//----------------------------------------------------------------------------------------------
-
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<E extends Exception> void tryread(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run, @NotNull Consumer<E> cate,
-																		 @NotNull Runnable finall)
-	{
-		tryread(ecla, () -> {
-			run.run();
-			return null;
-		}, cate, finall);
-	}
-
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla 异常的类
-	 * @param run  运行代码
-	 * @param cate 异常处理代码
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<E extends Exception> void trywrite(@NotNull Class<E> ecla, @NotNull tryRunnable<E> run, @NotNull Consumer<E> cate,
-																			@NotNull Runnable finall)
-	{
-		trywrite(ecla, () -> {
-			run.run();
-			return null;
-		}, cate, finall);
-	}
-
-	//------------------------------------
-
-	/**
-	 * 尝试运行于读锁
-	 *
-	 * @param ecla   异常的类
-	 * @param run    带返回的运行代码
-	 * @param cate   异常处理代码
-	 * @param finall finally 块处理代码
-	 *
-	 * @return 接口生成的数据
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run, @NotNull Consumer<E> cate,
-																		 @NotNull Runnable finall)
-	{
-		try {
-			return tryread(ecla, run);
-		} catch ( Exception e ) {
-			cate.accept((E) e);
-			return null;
-		} finally {
-			finall.run();
-		}
-	}
-
-	/**
-	 * 尝试运行于写锁
-	 *
-	 * @param ecla   异常的类
-	 * @param run    带返回的运行代码
-	 * @param cate   异常处理代码
-	 * @param finall finally 块处理代码
-	 *
-	 * @return 接口生成的数据
-	 *
-	 * @since SyLock 0.0.2
-	 */
-	default
-	<T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run, @NotNull Consumer<E> cate,
-																			@NotNull Runnable finall)
-	{
-		try {
-			return trywrite(ecla, run);
-		} catch ( Exception e ) {
-			cate.accept((E) e);
-			return null;
-		} finally {
-			finall.run();
-		}
-	}
-
-	/*--------------------------------------------------------------------------------------------*/
-
-	LockController getLockController();
+	<R> R write(@NotNull trySupplier<R> run, @Nullable Function<Throwable, R> catchby, @Nullable Function<R, R> finaby)
+	{ return lock(LockType.WRITE, run, catchby, finaby); }
 
 	/*--------------------------------------------------------------------------------------------*/
 
@@ -307,4 +122,38 @@ interface SyLock {
 	/** 获取读写锁实现 */
 	static @NotNull
 	RWLock newRWLock() { return new RWLock(); }
+
+	class c<R> {
+		@NotNull SyLock self;
+		@NotNull LockType lockType;
+		@NotNull trySupplier<R> run = null;
+		@Nullable Function<Throwable, R> catchby = null;
+		@Nullable Function<R, R> finaby = null;
+
+		c(@NotNull SyLock self, @NotNull LockType lockType) {
+			this.self = self;
+			this.lockType = lockType;
+		}
+
+		public
+		c<R> run(@NotNull trySupplier<R> run) {
+			this.run = run;
+			return this;
+		}
+
+		public
+		c<R> catchby(@Nullable Function<Throwable, R> catchby) {
+			this.catchby = catchby;
+			return this;
+		}
+
+		public
+		c<R> finaby(@Nullable Function<R, R> finaby) {
+			this.finaby = finaby;
+			return this;
+		}
+
+		public
+		R start() { return self.lock(lockType, run, catchby, finaby); }
+	}
 }

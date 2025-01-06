@@ -43,6 +43,8 @@ dependencies {
 	//    annotationProcessor "org.jetbrains:annotations:+"
 	compileOnly "jakarta.validation:jakarta.validation-api:+"
 	annotationProcessor "jakarta.validation:jakarta.validation-api:+"
+	compileOnly "jakarta.annotation:jakarta.annotation-api:+"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api:+"
 	compileOnly 'org.projectlombok:lombok:+'
 	annotationProcessor 'org.projectlombok:lombok:+'
 
@@ -52,6 +54,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testCompileOnly "jakarta.validation:jakarta.validation-api:+"
 	testAnnotationProcessor "jakarta.validation:jakarta.validation-api:+"
+	testCompileOnly "jakarta.annotation:jakarta.annotation-api:+"
+	testAnnotationProcessor "jakarta.annotation:jakarta.annotation-api:+"
 	testCompileOnly "org.projectlombok:lombok:+"
 	testAnnotationProcessor "org.projectlombok:lombok:+"
 }

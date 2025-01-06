@@ -1,7 +1,9 @@
 package fybug.nulll.pdconcurrent;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
+import fybug.nulll.pdconcurrent.e.LockType;
 import fybug.nulll.pdconcurrent.fun.trySupplier;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
@@ -25,11 +27,11 @@ import lombok.Getter;
  * @version 0.0.1
  * @since PDConcurrent 0.0.1
  */
+@Getter
 public
 class ObjLock implements SyLock {
-
 	/** 锁定的对象 */
-	@Getter final private Object LOCK;
+	private final Object LOCK;
 
 	public
 	ObjLock() { this(new Object()); }
@@ -40,39 +42,35 @@ class ObjLock implements SyLock {
 
 	//----------------------------------------------------------------------------------------------
 
-	@Override
 	public
-	<T> T read(@NotNull Supplier<T> run) { return run(run); }
-
-	@Override
-	public
-	<T> T write(@NotNull Supplier<T> run) { return run(run); }
-
-	// 读写一致
-	private
-	<T> T run(Supplier<T> run) {
-		synchronized ( LOCK ){
-			return run.get();
+	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+						 @Nullable Function<R, R> finaby)
+	{
+		R o = null;
+		// 不上锁
+		if ( lockType == LockType.NOLOCK ) {
+			try {
+				o = run.get();
+			} catch ( Throwable e ) {
+				if ( catchby != null )
+					o = catchby.apply(e);
+			} finally {
+				if ( finaby != null )
+					o = finaby.apply(o);
+			}
+		} else {
+			synchronized ( LOCK ){
+				try {
+					o = run.get();
+				} catch ( Throwable e ) {
+					if ( catchby != null )
+						o = catchby.apply(e);
+				} finally {
+					if ( finaby != null )
+						o = finaby.apply(o);
+				}
+			}
 		}
-	}
-
-	//----------------------------------------------------------------------------------------------
-
-	@Override
-	public
-	<T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E
-	{ return tryrun(ecla, run); }
-
-	@Override
-	public
-	<T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E
-	{ return tryrun(ecla, run); }
-
-	// 读写一致
-	private
-	<T, E extends Exception> T tryrun(Class<E> ecla, trySupplier<T, E> run) throws E {
-		synchronized ( LOCK ){
-			return run.get();
-		}
+		return o;
 	}
 }

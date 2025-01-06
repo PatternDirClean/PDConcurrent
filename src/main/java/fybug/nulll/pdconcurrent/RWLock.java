@@ -1,9 +1,11 @@
 package fybug.nulll.pdconcurrent;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
+import fybug.nulll.pdconcurrent.e.LockType;
 import fybug.nulll.pdconcurrent.fun.trySupplier;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
@@ -38,20 +40,24 @@ import lombok.Getter;
  * @version 0.0.1
  * @since PDConcurrent 0.0.1
  */
+@Getter
 public
 class RWLock implements SyLock {
-
-	@Getter final private ReentrantReadWriteLock LOCK;
-	@Getter final private ReentrantReadWriteLock.ReadLock Read_LOCK;
-	@Getter final private ReentrantReadWriteLock.WriteLock Write_LOCK;
+	private final ReentrantReadWriteLock LOCK;
+	private final ReentrantReadWriteLock.ReadLock Read_LOCK;
+	private final ReentrantReadWriteLock.WriteLock Write_LOCK;
+	private final ThreadLocal<Short> IS_LOCK = new ThreadLocal<>();
 
 	public
 	RWLock() { this(false); }
 
 	/** 生成并发管理，并指定是否使用公平锁 */
 	public
-	RWLock(boolean fair) {
-		LOCK = new ReentrantReadWriteLock(false);
+	RWLock(boolean fair) { this(new ReentrantReadWriteLock(fair)); }
+
+	public
+	RWLock(@NotNull ReentrantReadWriteLock lock) {
+		LOCK = lock;
 		Read_LOCK = LOCK.readLock();
 		Write_LOCK = LOCK.writeLock();
 	}
@@ -60,50 +66,38 @@ class RWLock implements SyLock {
 
 	@Override
 	public
-	<T> T read(@NotNull Supplier<T> run) {
-		try {
-			Read_LOCK.lock();
-			return run.get();
-		} finally {
-			Read_LOCK.unlock();
-		}
-	}
-
-	@Override
-	public
-	<T> T write(@NotNull Supplier<T> run) {
-		try {
-			Write_LOCK.lock();
-			return run.get();
-		} finally {
-			Write_LOCK.unlock();
-		}
-	}
-
-	//----------------------------------------------------------------------------------------------
-
-	@Override
-	public
-	<T, E extends Exception> T tryread(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E
+	<R> R lock(@NotNull LockType lockType, trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+						 @Nullable Function<R, R> finaby)
 	{
+		R o = null;
+		// set null
+		IS_LOCK.remove();
 		try {
-			Read_LOCK.lock();
-			return run.get();
+			if ( lockType != LockType.NOLOCK ) {
+				if ( lockType == LockType.READ ) {
+					Read_LOCK.lockInterruptibly();
+					IS_LOCK.set((short) 1);
+				} else {
+					Write_LOCK.lockInterruptibly();
+					IS_LOCK.set((short) 2);
+				}
+			}
+			o = run.get();
+		} catch ( Throwable e ) {
+			if ( catchby != null )
+				o = catchby.apply(e);
 		} finally {
-			Read_LOCK.unlock();
+			if ( finaby != null )
+				o = finaby.apply(o);
+			// 根据实际状态解锁
+			if ( IS_LOCK.get() == 1 ) {
+				Read_LOCK.unlock();
+			} else if ( IS_LOCK.get() == 2 ) {
+				Write_LOCK.unlock();
+			}
+			IS_LOCK.remove();
 		}
-	}
-
-	@Override
-	public
-	<T, E extends Exception> T trywrite(@NotNull Class<E> ecla, @NotNull trySupplier<T, E> run) throws E
-	{
-		try {
-			Write_LOCK.lock();
-			return run.get();
-		} finally {
-			Write_LOCK.unlock();
-		}
+		return o;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -117,4 +111,25 @@ class RWLock implements SyLock {
 	@NotNull
 	public
 	Condition newWriteCondition() { return Write_LOCK.newCondition(); }
+
+	public
+	boolean isLocked() { return IS_LOCK.get() != null && IS_LOCK.get() > 0; }
+
+	public
+	boolean isReadLocked() { return IS_LOCK.get() == 1; }
+
+	public
+	boolean isWriteLocked() { return IS_LOCK.get() == 2; }
+
+	public
+	boolean toread() throws InterruptedException {
+		// 转为读锁
+		if ( IS_LOCK.get() == 2 ) {
+			Read_LOCK.lockInterruptibly();
+			Write_LOCK.unlock();
+			IS_LOCK.set((short) 1);
+			return true;
+		}
+		return false;
+	}
 }
