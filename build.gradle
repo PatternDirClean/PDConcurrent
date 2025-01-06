@@ -1,113 +1,114 @@
 plugins {
-    id 'java'
-    id 'idea'
+	id 'java'
+	id 'idea'
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = "UTF-8"
 }
 
 group 'fybug.nulll'
 version = '0.0.2'
-sourceCompatibility = '14'
-targetCompatibility = '14'
 
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(23)
+	}
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
-    google()
-    maven { url 'https://repo.spring.io/milestone' }
-    maven { url 'https://repo.spring.io/snapshot' }
-    maven { url "https://repo.spring.io/milestone" }
-    maven { url 'https://maven.aliyun.com/repository/releases' }
-    maven { url "https://maven.aliyun.com/repository/jcenter" }
-    maven { url "https://maven.aliyun.com/repository/mapr-public" }
-    maven { url "https://maven.aliyun.com/repository/staging-alpha" }
-    maven { url "https://maven.aliyun.com/repository/central" }
-    maven { url "https://maven.aliyun.com/repository/public/" }
-    maven { url "https://maven.aliyun.com/repository/google" }
-    maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
-    maven { url "https://maven.aliyun.com/repository/spring" }
-    maven { url "https://maven.aliyun.com/repository/spring-plugin" }
-    maven { url "https://maven.aliyun.com/repository/grails-core" }
-    maven { url "https://maven.aliyun.com/repository/snapshots" }
-    maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
-    maven { url "https://maven.aliyun.com/repository/staging-alpha-group" }
+	mavenLocal()
+	mavenCentral()
+	google()
+	maven { url 'https://maven.aliyun.com/repository/releases' }
+	maven { url "https://maven.aliyun.com/repository/jcenter" }
+	maven { url "https://maven.aliyun.com/repository/mapr-public" }
+	maven { url "https://maven.aliyun.com/repository/staging-alpha" }
+	maven { url "https://maven.aliyun.com/repository/central" }
+	maven { url "https://maven.aliyun.com/repository/public/" }
+	maven { url "https://maven.aliyun.com/repository/google" }
+	maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+	maven { url "https://maven.aliyun.com/repository/spring" }
+	maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+	maven { url "https://maven.aliyun.com/repository/grails-core" }
+	maven { url "https://maven.aliyun.com/repository/snapshots" }
+	maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
+	maven { url "https://maven.aliyun.com/repository/staging-alpha-group" }
 }
 
 dependencies {
-    implementation fileTree(dir: 'lib', includes: ['*.jar'])
+	implementation fileTree(dir: 'lib', includes: ['*.jar'])
 
-    compileOnly "org.jetbrains:annotations:+"
-    annotationProcessor "org.jetbrains:annotations:+"
-    compileOnly "org.projectlombok:lombok:+"
-    annotationProcessor "org.projectlombok:lombok:+"
+	//    compileOnly "org.jetbrains:annotations:+"
+	//    annotationProcessor "org.jetbrains:annotations:+"
+	compileOnly "jakarta.validation:jakarta.validation-api:+"
+	annotationProcessor "jakarta.validation:jakarta.validation-api:+"
+	compileOnly 'org.projectlombok:lombok:+'
+	annotationProcessor 'org.projectlombok:lombok:+'
 
-    testImplementation "junit:junit:4.12"
-    testCompileOnly "org.jetbrains:annotations:+"
-    testAnnotationProcessor "org.jetbrains:annotations:+"
-    testCompileOnly "org.projectlombok:lombok:+"
-    testAnnotationProcessor "org.projectlombok:lombok:+"
+	//	testImplementation "junit:junit"
+	//    testCompileOnly "org.jetbrains:annotations:+"
+	//    testAnnotationProcessor "org.jetbrains:annotations:+"
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testCompileOnly "jakarta.validation:jakarta.validation-api:+"
+	testAnnotationProcessor "jakarta.validation:jakarta.validation-api:+"
+	testCompileOnly "org.projectlombok:lombok:+"
+	testAnnotationProcessor "org.projectlombok:lombok:+"
 }
 
+test {
+	dependencies {
+		testImplementation "org.junit.platform:junit-platform-launcher"
+	}
+	useJUnitPlatform()
+}
+
+// todo 打包重整
 task PDConcurrent(type: Jar) {
-    destinationDirectory = file('jar')
-    manifest {
-        attributes(
-                'Manifest-Version': '1.0',
-                'Built-By': 'fybug/风雨bu改',
-                'Created-By': 'IntelliJ IDEA'
-        )
-    }
-    archiveFileName = 'PDConcurrent.jar'
-    // 打包编译输出
-    from sourceSets.main.output
+	destinationDirectory = file('jar')
+	manifest {
+		attributes('Manifest-Version': '1.0',
+							 'Built-By': 'fybug/风雨bu改',
+							 'Created-By': 'IntelliJ IDEA')
+	}
+	archiveFileName = 'PDConcurrent.jar'
+	// 打包编译输出
+	from sourceSets.main.output
 }
 
 task PDConcurrent_all(type: Jar) {
-    destinationDirectory = file('jar')
-    manifest {
-        attributes(
-                'Manifest-Version': '1.0',
-                'Built-By': 'fybug/风雨bu改',
-                'Created-By': 'IntelliJ IDEA'
-        )
-    }
-    archiveFileName = 'PDConcurrent_all.jar'
-    // 打包编译输出
-    from sourceSets.main.output
-    // 打包源码
-    from sourceSets.main.allSource
-    from {
-        // implementation 相关的引入解压并打包入新的jar中
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+	destinationDirectory = file('jar')
+	manifest {
+		attributes('Manifest-Version': '1.0',
+							 'Built-By': 'fybug/风雨bu改',
+							 'Created-By': 'IntelliJ IDEA')
+	}
+	archiveFileName = 'PDConcurrent_all.jar'
+	// 打包编译输出
+	from sourceSets.main.output
+	// 打包源码
+	from sourceSets.main.allSource
+	from {
+		// implementation 相关的引入解压并打包入新的jar中
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
 }
 
 task PDConcurrent_sources(type: Jar) {
-    destinationDirectory = file('jar')
-    manifest {
-        attributes(
-                'Manifest-Version': '1.0',
-                'Built-By': 'fybug/风雨bu改',
-                'Created-By': 'IntelliJ IDEA'
-        )
-    }
-    archiveFileName = 'PDConcurrent_sources.jar'
-    // 打包源码
-    from sourceSets.main.allSource
+	destinationDirectory = file('jar')
+	manifest {
+		attributes('Manifest-Version': '1.0',
+							 'Built-By': 'fybug/风雨bu改',
+							 'Created-By': 'IntelliJ IDEA')
+	}
+	archiveFileName = 'PDConcurrent_sources.jar'
+	// 打包源码
+	from sourceSets.main.allSource
 }
 
 task release {
-    dependsOn clean
-    dependsOn PDConcurrent_all
-    dependsOn PDConcurrent
-    dependsOn PDConcurrent_sources
+	dependsOn clean
+	dependsOn PDConcurrent_all
+	dependsOn PDConcurrent
+	dependsOn PDConcurrent_sources
 }
