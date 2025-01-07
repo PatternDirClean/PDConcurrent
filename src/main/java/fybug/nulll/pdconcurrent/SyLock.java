@@ -395,6 +395,7 @@ interface SyLock {
 	 * @see #lock(LockType, trySupplier, Function, Function)
 	 * @since 0.1.0
 	 */
+	@SuppressWarnings("unused")
 	default
 	void write(@NotNull tryRunnable run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby) {
 		lock(LockType.WRITE, () -> {
@@ -403,7 +404,7 @@ interface SyLock {
 		}, catchby == null ? null : e -> {
 			catchby.accept(e);
 			return null;
-		}, finaby == null ? null : _ -> {
+		}, finaby == null ? null : r -> {
 			finaby.run();
 			return null;
 		});
