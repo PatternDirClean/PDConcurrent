@@ -8,7 +8,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 group 'fybug.nulll'
-version = '0.0.2'
+version = '0.1.0'
 
 java {
 	toolchain {
@@ -51,7 +51,6 @@ dependencies {
 	//	testImplementation "junit:junit"
 	//    testCompileOnly "org.jetbrains:annotations:+"
 	//    testAnnotationProcessor "org.jetbrains:annotations:+"
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testCompileOnly "jakarta.validation:jakarta.validation-api:+"
 	testAnnotationProcessor "jakarta.validation:jakarta.validation-api:+"
 	testCompileOnly "jakarta.annotation:jakarta.annotation-api:+"
@@ -61,21 +60,24 @@ dependencies {
 }
 
 test {
-	dependencies {
-		testImplementation "org.junit.platform:junit-platform-launcher"
-	}
 	useJUnitPlatform()
 }
 
-// todo 打包重整
-task PDConcurrent(type: Jar) {
+task PDConcurrent_bin(type: Jar) {
 	destinationDirectory = file('jar')
 	manifest {
 		attributes('Manifest-Version': '1.0',
 							 'Built-By': 'fybug/风雨bu改',
-							 'Created-By': 'IntelliJ IDEA')
+							 'Build-Jdk-Spec': 23,
+							 'Bundle-Description': 'java并发控制工具',
+							 'Bundle-Name': 'PDConcurrent',
+							 'Bundle-DocURL': '文档地址',
+							 'Bundle-Vendor': 'IntelliJ IDEA',
+							 'Bundle-Version': version,
+							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
+							 'Created-By': 'Gradle 8.10.2')
 	}
-	archiveFileName = 'PDConcurrent.jar'
+	archiveFileName = 'PDConcurrent_bin.jar'
 	// 打包编译输出
 	from sourceSets.main.output
 }
@@ -85,7 +87,14 @@ task PDConcurrent_all(type: Jar) {
 	manifest {
 		attributes('Manifest-Version': '1.0',
 							 'Built-By': 'fybug/风雨bu改',
-							 'Created-By': 'IntelliJ IDEA')
+							 'Build-Jdk-Spec': 23,
+							 'Bundle-Description': 'java并发控制工具',
+							 'Bundle-Name': 'PDConcurrent',
+							 'Bundle-DocURL': '文档地址',
+							 'Bundle-Vendor': 'IntelliJ IDEA',
+							 'Bundle-Version': version,
+							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
+							 'Created-By': 'Gradle 8.10.2')
 	}
 	archiveFileName = 'PDConcurrent_all.jar'
 	// 打包编译输出
@@ -103,7 +112,14 @@ task PDConcurrent_sources(type: Jar) {
 	manifest {
 		attributes('Manifest-Version': '1.0',
 							 'Built-By': 'fybug/风雨bu改',
-							 'Created-By': 'IntelliJ IDEA')
+							 'Build-Jdk-Spec': 23,
+							 'Bundle-Description': 'java并发控制工具',
+							 'Bundle-Name': 'PDConcurrent',
+							 'Bundle-DocURL': '文档地址',
+							 'Bundle-Vendor': 'IntelliJ IDEA',
+							 'Bundle-Version': version,
+							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
+							 'Created-By': 'Gradle 8.10.2')
 	}
 	archiveFileName = 'PDConcurrent_sources.jar'
 	// 打包源码
@@ -112,7 +128,6 @@ task PDConcurrent_sources(type: Jar) {
 
 task release {
 	dependsOn clean
-	dependsOn PDConcurrent_all
-	dependsOn PDConcurrent
+	dependsOn PDConcurrent_bin
 	dependsOn PDConcurrent_sources
 }

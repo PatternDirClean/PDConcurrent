@@ -53,7 +53,7 @@ class ReLock implements SyLock {
 
 	@Override
 	public
-	<R> R lock(@NotNull LockType lockType, trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+	<R> R lock(@NotNull LockType lockType, trySupplier<R> run, @Nullable Function<Exception, R> catchby,
 						 @Nullable Function<R, R> finaby)
 	{
 		R o = null;
@@ -61,7 +61,7 @@ class ReLock implements SyLock {
 			if ( lockType != LockType.NOLOCK )
 				LOCK.lockInterruptibly();
 			o = run.get();
-		} catch ( Throwable e ) {
+		} catch ( Exception e ) {
 			if ( catchby != null )
 				o = catchby.apply(e);
 		} finally {
@@ -73,11 +73,30 @@ class ReLock implements SyLock {
 		return o;
 	}
 
+	@Override
 	public
-	boolean isLocked() { return LOCK.isLocked(); }
+	<R> R trylock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
+		R o = null;
+		try {
+			if ( lockType != LockType.NOLOCK )
+				LOCK.lockInterruptibly();
+			o = run.get();
+		} finally {
+			if ( finaby != null )
+				o = finaby.apply(o);
+			if ( lockType != LockType.NOLOCK && LOCK.isLocked() )
+				LOCK.unlock();
+		}
+		return o;
+	}
+
+	//----------------------------------------------------------------------------------------------
 
 	/** 获取 {@link Condition} */
 	@NotNull
 	public
 	Condition newCondition() { return LOCK.newCondition(); }
+
+	public
+	boolean isLocked() { return LOCK.isLocked(); }
 }

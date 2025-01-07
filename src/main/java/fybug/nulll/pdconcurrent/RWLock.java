@@ -66,51 +66,80 @@ class RWLock implements SyLock {
 
 	@Override
 	public
-	<R> R lock(@NotNull LockType lockType, trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Exception, R> catchby,
 						 @Nullable Function<R, R> finaby)
 	{
 		R o = null;
 		// set null
 		IS_LOCK.remove();
 		try {
-			if ( lockType != LockType.NOLOCK ) {
-				if ( lockType == LockType.READ ) {
-					Read_LOCK.lockInterruptibly();
-					IS_LOCK.set((short) 1);
-				} else {
-					Write_LOCK.lockInterruptibly();
-					IS_LOCK.set((short) 2);
-				}
-			}
+			tolock(lockType);
 			o = run.get();
-		} catch ( Throwable e ) {
+		} catch ( Exception e ) {
 			if ( catchby != null )
 				o = catchby.apply(e);
 		} finally {
 			if ( finaby != null )
 				o = finaby.apply(o);
-			// 根据实际状态解锁
-			if ( IS_LOCK.get() == 1 ) {
-				Read_LOCK.unlock();
-			} else if ( IS_LOCK.get() == 2 ) {
-				Write_LOCK.unlock();
-			}
-			IS_LOCK.remove();
+			tounlock();
 		}
 		return o;
 	}
 
+	@Override
+	public
+	<R> R trylock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
+		R o = null;
+		// set null
+		IS_LOCK.remove();
+		try {
+			tolock(lockType);
+			o = run.get();
+		} finally {
+			if ( finaby != null )
+				o = finaby.apply(o);
+			tounlock();
+		}
+		return o;
+	}
+
+	public
+	boolean toread() {
+		// 转为读锁
+		if ( IS_LOCK.get() == 2 ) {
+			Read_LOCK.lock();
+			Write_LOCK.unlock();
+			IS_LOCK.set((short) 1);
+			return true;
+		}
+		return false;
+	}
+
+	private
+	void tolock(@NotNull LockType lockType) throws InterruptedException {
+		if ( lockType != LockType.NOLOCK ) {
+			if ( lockType == LockType.READ ) {
+				Read_LOCK.lockInterruptibly();
+				IS_LOCK.set((short) 1);
+			} else {
+				Write_LOCK.lockInterruptibly();
+				IS_LOCK.set((short) 2);
+			}
+		}
+	}
+
+	private
+	void tounlock() {
+		// 根据实际状态解锁
+		if ( IS_LOCK.get() == 1 )
+			Read_LOCK.unlock();
+		else if ( IS_LOCK.get() == 2 )
+			Write_LOCK.unlock();
+		// 清除记录数据
+		IS_LOCK.remove();
+	}
+
 	//----------------------------------------------------------------------------------------------
-
-	/** 获取 {@link Condition} */
-	@NotNull
-	public
-	Condition newReadCondition() { return Read_LOCK.newCondition(); }
-
-	/** 获取 {@link Condition} */
-	@NotNull
-	public
-	Condition newWriteCondition() { return Write_LOCK.newCondition(); }
 
 	public
 	boolean isLocked() { return IS_LOCK.get() != null && IS_LOCK.get() > 0; }
@@ -121,15 +150,13 @@ class RWLock implements SyLock {
 	public
 	boolean isWriteLocked() { return IS_LOCK.get() == 2; }
 
+	/** 获取 {@link Condition} */
+	@NotNull
 	public
-	boolean toread() throws InterruptedException {
-		// 转为读锁
-		if ( IS_LOCK.get() == 2 ) {
-			Read_LOCK.lockInterruptibly();
-			Write_LOCK.unlock();
-			IS_LOCK.set((short) 1);
-			return true;
-		}
-		return false;
-	}
+	Condition newReadCondition() { return Read_LOCK.newCondition(); }
+
+	/** 获取 {@link Condition} */
+	@NotNull
+	public
+	Condition newWriteCondition() { return Write_LOCK.newCondition(); }
 }

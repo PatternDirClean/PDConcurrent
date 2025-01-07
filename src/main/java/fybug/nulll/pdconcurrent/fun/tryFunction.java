@@ -8,11 +8,12 @@ import jakarta.validation.constraints.NotNull;
  * @author fybug
  * @version 0.0.2
  * @see Function
- * @since fun 0.0.3
+ * @since fun 0.0.4
  */
 public
 interface tryFunction<T, R> {
-	R apply(T t) throws Throwable;
+	/** @see Function#apply(Object) */
+	R apply(T t) throws Exception;
 
 	/** @since 0.0.2 */
 	@NotNull

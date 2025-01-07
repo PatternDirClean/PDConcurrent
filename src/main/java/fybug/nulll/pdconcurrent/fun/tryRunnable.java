@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotNull;
  * @author fybug
  * @version 0.0.2
  * @see Runnable
- * @since fun 0.0.3
+ * @since fun 0.0.4
  */
 @FunctionalInterface
 public
 interface tryRunnable {
-
-	void run() throws Throwable;
+	/** @see Runnable#run() */
+	void run() throws Exception;
 
 	/** @since 0.0.2 */
 	@NotNull

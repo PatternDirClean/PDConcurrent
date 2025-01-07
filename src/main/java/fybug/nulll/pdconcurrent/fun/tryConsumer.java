@@ -8,11 +8,12 @@ import jakarta.validation.constraints.NotNull;
  * @author fybug
  * @version 0.0.2
  * @see Consumer
- * @since fun 0.0.3
+ * @since fun 0.0.4
  */
 public
 interface tryConsumer<T> {
-	void accept(T t) throws Throwable;
+	/** @see Consumer#accept(Object) */
+	void accept(T t) throws Exception;
 
 	/** @since 0.0.2 */
 	@NotNull

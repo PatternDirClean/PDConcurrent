@@ -8,12 +8,13 @@ import jakarta.validation.constraints.NotNull;
  * @author fybug
  * @version 0.0.2
  * @see Supplier
- * @since fun 0.0.3
+ * @since fun 0.0.4
  */
 @FunctionalInterface
 public
 interface trySupplier<R> {
-	R get() throws Throwable;
+	/** @see Supplier#get() */
+	R get() throws Exception;
 
 	/** @since 0.0.2 */
 	@NotNull

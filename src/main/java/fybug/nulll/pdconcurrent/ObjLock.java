@@ -42,8 +42,9 @@ class ObjLock implements SyLock {
 
 	//----------------------------------------------------------------------------------------------
 
+	@Override
 	public
-	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Throwable, R> catchby,
+	<R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Exception, R> catchby,
 						 @Nullable Function<R, R> finaby)
 	{
 		R o = null;
@@ -51,7 +52,7 @@ class ObjLock implements SyLock {
 		if ( lockType == LockType.NOLOCK ) {
 			try {
 				o = run.get();
-			} catch ( Throwable e ) {
+			} catch ( Exception e ) {
 				if ( catchby != null )
 					o = catchby.apply(e);
 			} finally {
@@ -62,9 +63,34 @@ class ObjLock implements SyLock {
 			synchronized ( LOCK ){
 				try {
 					o = run.get();
-				} catch ( Throwable e ) {
+				} catch ( Exception e ) {
 					if ( catchby != null )
 						o = catchby.apply(e);
+				} finally {
+					if ( finaby != null )
+						o = finaby.apply(o);
+				}
+			}
+		}
+		return o;
+	}
+
+	@Override
+	public
+	<R> R trylock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
+		R o = null;
+		// 不上锁
+		if ( lockType == LockType.NOLOCK ) {
+			try {
+				o = run.get();
+			} finally {
+				if ( finaby != null )
+					o = finaby.apply(o);
+			}
+		} else {
+			synchronized ( LOCK ){
+				try {
+					o = run.get();
 				} finally {
 					if ( finaby != null )
 						o = finaby.apply(o);

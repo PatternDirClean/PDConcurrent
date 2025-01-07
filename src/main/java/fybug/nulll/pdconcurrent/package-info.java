@@ -5,7 +5,7 @@
  * 附带 {@code try***} 的功能接口包，在 java 原有的功能接口的基础上允许抛出异常
  *
  * @author fybug
- * @version 0.0.1
- * @since JDK 13+
+ * @version 0.1.0
+ * @since JDK 23+
  */
 package fybug.nulll.pdconcurrent;
