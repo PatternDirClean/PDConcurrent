@@ -28,16 +28,13 @@
 
 ### \> > 基础使用示例
 ```java
-// 尝试申请读锁
-SyLock.newObjLock().read(() -> {
+public static void main(String[] args) {
+  var lock = SyLock.newObjLock();
+  lock.read(() -> {
     // 并发域代码内容
     [return null;]? // 可选择是否返回
-});
-
-// 尝试申请写锁
-SyLock.newObjLock().write(() -> {
-    [return null;]?
-});
+  });
+}
 ```
 
 以上即为核心用法，将需要并发处理的代码通过一个 `Runnable` 接口包起来。启用并发管理以及停止并发管理部分的的代码由本工具封装，直接通过上述代码的方式传入需要运行的内容即可
@@ -50,48 +47,58 @@ SyLock.newObjLock().write(() -> {
 
 ### \> > synchronized 锁
 ```java
-// 使用
-SyLock.newObjLock().read(() -> {
+public static void main(String[] args) {
+  // 使用
+  var lock = SyLock.newObjLock();
+  lock.read(() -> {
     // 并发域代码内容
-});
+  });
 
-// 不使用
-synchronized ( new Object() ){
+  // 不使用
+  synchronized ( new Object() ){
     // 并发域代码内容
+  }
 }
+
 ```
 
 ### \> > ReentrantLock 锁
 ```java
-// 使用
-SyLock.newReLock().read(() -> {
+public static void main(String[] args) {
+  // 使用
+  var lock = SyLock.newReLock();
+  lock.read(() -> {
     // 并发域代码内容
-});
+  });
 
-// 不使用
-ReentrantLock lock = new ReentrantLock();
-try {
+  // 不使用
+  ReentrantLock lock = new ReentrantLock();
+  try {
     lock.lock();
     // 并发域代码内容
-} finally {
+  } finally {
     lock.unlock();
+  }
 }
 ```
 
 ### \> > ReadWriteLock 锁
 ```java
-// 使用
-SyLock.newRWLock().read(() -> {
+public static void main(String[] args) {
+  // 使用
+  var lock = SyLock.newRWLock();
+  lock.read(() -> {
     // 并发域代码内容
-});
+  });
 
-// 不使用
-ReadWriteLock lock = new ReentrantReadWriteLock();
-try {
+  // 不使用
+  ReadWriteLock lock = new ReentrantReadWriteLock();
+  try {
     lock.readLock().lock();
     // 并发域代码内容
-} finally {
+  } finally {
     lock.readLock().unlock();
+  }
 }
 ```
 
@@ -99,8 +106,6 @@ try {
 请导入其 `jar` 文件,文件在 **发行版** 或项目的 **jar** 文件夹下可以找到
 
 > PDConcurrent.jar 为不包含源码的包
->
-> PDConcurrent_all.jar 为包含了源码的包
 >
 > PDConcurrent_sources.jar 为仅包含源码的包
 

@@ -27,7 +27,8 @@ interface SyLock {
 	/**
 	 * 使用锁执行指定回调
 	 * <p>
-	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param lockType 锁类型
 	 * @param run      带返回的回调
@@ -50,7 +51,8 @@ interface SyLock {
 	/**
 	 * 使用锁执行指定回调
 	 * <p>
-	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param lockType 锁类型
 	 * @param run      执行的回调
@@ -127,7 +129,8 @@ interface SyLock {
 	/**
 	 * 尝试使用锁执行指定回调
 	 * <p>
-	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出
+	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param lockType 锁类型
 	 * @param run      带返回的回调
@@ -148,7 +151,8 @@ interface SyLock {
 	/**
 	 * 尝试使用锁执行指定回调
 	 * <p>
-	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出
+	 * 可通过传入{@link LockType}指定锁的类型，运行时自带try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param lockType 锁类型
 	 * @param run      执行的回调
@@ -297,7 +301,8 @@ interface SyLock {
 	/**
 	 * 使用读锁执行指定回调
 	 * <p>
-	 * 调用读锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 调用读锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param run     带返回的回调
 	 * @param catchby 进入catch块后的回调，传入当前异常
@@ -319,7 +324,8 @@ interface SyLock {
 	/**
 	 * 使用读锁执行指定回调
 	 * <p>
-	 * 调用读锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 调用读锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param run     执行的回调
 	 * @param catchby 进入catch块后的回调，传入当前异常
@@ -349,7 +355,8 @@ interface SyLock {
 	/**
 	 * 使用写锁执行指定回调
 	 * <p>
-	 * 调用写锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 调用写锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param run     带返回的回调
 	 * @param catchby 进入catch块后的回调，传入当前异常
@@ -371,7 +378,8 @@ interface SyLock {
 	/**
 	 * 使用写锁执行指定回调
 	 * <p>
-	 * 调用写锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行
+	 * 调用写锁执行，运行时自带try-catch-finally块，通过三个回调参数插入不同的块中执行<br/>
+	 * 所有回调均在并发域内执行
 	 *
 	 * @param run     执行的回调
 	 * @param catchby 进入catch块后的回调，传入当前异常

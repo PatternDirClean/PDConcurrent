@@ -39,22 +39,14 @@ repositories {
 dependencies {
 	implementation fileTree(dir: 'lib', includes: ['*.jar'])
 
-	//    compileOnly "org.jetbrains:annotations:+"
-	//    annotationProcessor "org.jetbrains:annotations:+"
 	compileOnly "jakarta.validation:jakarta.validation-api:+"
-	annotationProcessor "jakarta.validation:jakarta.validation-api:+"
 	compileOnly "jakarta.annotation:jakarta.annotation-api:+"
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api:+"
 	compileOnly 'org.projectlombok:lombok:+'
 	annotationProcessor 'org.projectlombok:lombok:+'
 
 	//	testImplementation "junit:junit"
-	//    testCompileOnly "org.jetbrains:annotations:+"
-	//    testAnnotationProcessor "org.jetbrains:annotations:+"
 	testCompileOnly "jakarta.validation:jakarta.validation-api:+"
-	testAnnotationProcessor "jakarta.validation:jakarta.validation-api:+"
 	testCompileOnly "jakarta.annotation:jakarta.annotation-api:+"
-	testAnnotationProcessor "jakarta.annotation:jakarta.annotation-api:+"
 	testCompileOnly "org.projectlombok:lombok:+"
 	testAnnotationProcessor "org.projectlombok:lombok:+"
 }
@@ -71,7 +63,7 @@ task PDConcurrent_bin(type: Jar) {
 							 'Build-Jdk-Spec': 23,
 							 'Bundle-Description': 'java并发控制工具',
 							 'Bundle-Name': 'PDConcurrent',
-							 'Bundle-DocURL': '文档地址',
+							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
 							 'Bundle-Vendor': 'IntelliJ IDEA',
 							 'Bundle-Version': version,
 							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
@@ -90,7 +82,7 @@ task PDConcurrent_all(type: Jar) {
 							 'Build-Jdk-Spec': 23,
 							 'Bundle-Description': 'java并发控制工具',
 							 'Bundle-Name': 'PDConcurrent',
-							 'Bundle-DocURL': '文档地址',
+							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
 							 'Bundle-Vendor': 'IntelliJ IDEA',
 							 'Bundle-Version': version,
 							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
@@ -115,7 +107,7 @@ task PDConcurrent_sources(type: Jar) {
 							 'Build-Jdk-Spec': 23,
 							 'Bundle-Description': 'java并发控制工具',
 							 'Bundle-Name': 'PDConcurrent',
-							 'Bundle-DocURL': '文档地址',
+							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
 							 'Bundle-Vendor': 'IntelliJ IDEA',
 							 'Bundle-Version': version,
 							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',

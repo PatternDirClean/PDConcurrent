@@ -10,47 +10,85 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 /**
- * 使用 {@link ReentrantLock} 实现的并发管理
- * <pre>使用并发管理：
- *     public static
- *     void main(String[] args) {
- *         var lock = new ReLock();
- *         lock.read(() -> System.out.println("asdas"));
- *     }</pre>
- * <pre>不使用：
- *     public static
- *     void main(String[] args) {
- *         var lock = new ReentrantLock();
- *         lock.lock();
- *         try {
- *             System.out.println("asdas");
- *         } finally {
- *             lock.unlock();
- *         }
- *     }</pre>
+ * <h2>使用{@link ReentrantLock}实现的并发管理.</h2>
+ * 使用{@link ReentrantLock}实现并发域，读写锁均为同一个实现<br/>
+ * 使用了可中断的上锁操作{@link ReentrantLock#lockInterruptibly()}<br/>
+ * 支持使用{@link #newCondition()}获取{@link Condition}，通过{@link #isLocked()}检查是否被占用
+ * <br/><br/>
+ * 使用并发管理：
+ * {@snippet lang = java:
+ * public static void main(String[] args) {
+ *   var lock = new ReLock();
+ *   lock.read(() -> System.out.println("asdas"));
+ * }}
+ * 不使用：
+ * {@snippet lang = java:
+ * import java.util.concurrent.locks.ReentrantLock;
+ * public static void main(String[] args) {
+ *   var lock = new ReentrantLock();
+ *   lock.lock();
+ *   try {
+ *     System.out.println("asdas");
+ *   } finally {
+ *     lock.unlock();
+ *   }
+ * }}
  *
  * @author fybug
- * @version 0.0.1
+ * @version 0.1.0
+ * @see SyLock
+ * @see ReentrantLock
  * @since PDConcurrent 0.0.1
  */
 @Getter
 public
 class ReLock implements SyLock {
-	// 锁
+	/** 锁 */
 	private final ReentrantLock LOCK;
 
+	/**
+	 * 构建并发管理
+	 * <p>
+	 * 使用非公平锁
+	 */
 	public
 	ReLock() { this(false); }
 
-	/** 构造并发处理，并决定使用公平锁还是非公平锁 */
+	/**
+	 * 构造并发处理
+	 *
+	 * @param fair 是否使用公平锁
+	 */
 	public
 	ReLock(boolean fair) { this(new ReentrantLock(fair)); }
 
+	/**
+	 * 构造并发处理
+	 *
+	 * @param LOCK 使用的锁
+	 *
+	 * @since 0.1.0
+	 */
 	public
 	ReLock(@NotNull ReentrantLock LOCK) { this.LOCK = LOCK; }
 
 	//----------------------------------------------------------------------------------------------
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param lockType {@inheritDoc}
+	 * @param run      {@inheritDoc}
+	 * @param catchby  {@inheritDoc}
+	 * @param finaby   {@inheritDoc}
+	 * @param <R>      {@inheritDoc}
+	 *
+	 * @return {@inheritDoc}
+	 *
+	 * @implNote 使用 {@link ReentrantLock} 实现的并发域，使用了{@link ReentrantLock#lockInterruptibly()}进行可中断的上锁操作
+	 * @see SyLock#lock(LockType, trySupplier, Function, Function)
+	 * @since 0.1.0
+	 */
 	@Override
 	public
 	<R> R lock(@NotNull LockType lockType, trySupplier<R> run, @Nullable Function<Exception, R> catchby,
@@ -58,45 +96,85 @@ class ReLock implements SyLock {
 	{
 		R o = null;
 		try {
+			// 上锁
 			if ( lockType != LockType.NOLOCK )
 				LOCK.lockInterruptibly();
+			// 主要内容
 			o = run.get();
 		} catch ( Exception e ) {
+			// 异常处理
 			if ( catchby != null )
 				o = catchby.apply(e);
 		} finally {
-			if ( finaby != null )
-				o = finaby.apply(o);
-			if ( lockType != LockType.NOLOCK && LOCK.isLocked() )
-				LOCK.unlock();
+			// 防止错误
+			try {
+				// 收尾
+				if ( finaby != null )
+					o = finaby.apply(o);
+			} finally {
+				// 解锁
+				if ( lockType != LockType.NOLOCK && LOCK.isLocked() )
+					LOCK.unlock();
+			}
 		}
 		return o;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @param lockType {@inheritDoc}
+	 * @param run      {@inheritDoc}
+	 * @param finaby   {@inheritDoc}
+	 * @param <R>      {@inheritDoc}
+	 *
+	 * @return {@inheritDoc}
+	 *
+	 * @implNote 使用 {@link ReentrantLock} 实现的并发域，使用了{@link ReentrantLock#lockInterruptibly()
+	 * @see SyLock#trylock(LockType, trySupplier, Function)
+	 * @since 0.1.0
+	 */
 	@Override
 	public
 	<R> R trylock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
 		R o = null;
 		try {
+			// 上锁
 			if ( lockType != LockType.NOLOCK )
 				LOCK.lockInterruptibly();
+			// 主要内容
 			o = run.get();
 		} finally {
-			if ( finaby != null )
-				o = finaby.apply(o);
-			if ( lockType != LockType.NOLOCK && LOCK.isLocked() )
-				LOCK.unlock();
+			// 防止错误
+			try {
+				// 收尾
+				if ( finaby != null )
+					o = finaby.apply(o);
+			} finally {
+				// 解锁
+				if ( lockType != LockType.NOLOCK && LOCK.isLocked() )
+					LOCK.unlock();
+			}
 		}
 		return o;
 	}
 
 	//----------------------------------------------------------------------------------------------
 
-	/** 获取 {@link Condition} */
+	/**
+	 * 获取{@link Condition}
+	 *
+	 * @see ReentrantLock#newCondition()
+	 */
 	@NotNull
 	public
 	Condition newCondition() { return LOCK.newCondition(); }
 
+	/**
+	 * 检查锁是否被占用
+	 *
+	 * @return 是否被占用
+	 */
 	public
 	boolean isLocked() { return LOCK.isLocked(); }
 }
