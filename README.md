@@ -26,7 +26,7 @@
 
 本工具采用读写锁标准，无论内部实现如何，外部接口均提供 **read, **write 方法区分读锁并发域和写锁并发域
 
-### \> > 基础使用示例
+### 基础使用示例
 ```java
 public static void main(String[] args) {
   var lock = SyLock.newObjLock();
@@ -45,7 +45,7 @@ public static void main(String[] args) {
 
 可通过接口的工厂方法实例化内部采用不同实现的锁。
 
-### \> > synchronized 锁
+### synchronized 锁
 ```java
 public static void main(String[] args) {
   // 使用
@@ -62,7 +62,7 @@ public static void main(String[] args) {
 
 ```
 
-### \> > ReentrantLock 锁
+### ReentrantLock 锁
 ```java
 public static void main(String[] args) {
   // 使用
@@ -82,7 +82,7 @@ public static void main(String[] args) {
 }
 ```
 
-### \> > ReadWriteLock 锁
+### ReadWriteLock 锁
 ```java
 public static void main(String[] args) {
   // 使用
