@@ -37,88 +37,82 @@ repositories {
 }
 
 dependencies {
+	// 本地依赖
 	implementation fileTree(dir: 'lib', includes: ['*.jar'])
 
+	// 注释包
 	compileOnly "jakarta.validation:jakarta.validation-api:+"
 	compileOnly "jakarta.annotation:jakarta.annotation-api:+"
+	// lombok
 	compileOnly 'org.projectlombok:lombok:+'
 	annotationProcessor 'org.projectlombok:lombok:+'
 
-	//	testImplementation "junit:junit"
+	// 注释包
 	testCompileOnly "jakarta.validation:jakarta.validation-api:+"
 	testCompileOnly "jakarta.annotation:jakarta.annotation-api:+"
+	// lombok
 	testCompileOnly "org.projectlombok:lombok:+"
 	testAnnotationProcessor "org.projectlombok:lombok:+"
+	//	testImplementation "junit:junit"
 }
 
 test {
 	useJUnitPlatform()
 }
 
-task PDConcurrent_bin(type: Jar) {
-	destinationDirectory = file('jar')
+/** 清单文件内容 */
+tasks.withType(Jar).configureEach {
 	manifest {
 		attributes('Manifest-Version': '1.0',
 							 'Built-By': 'fybug/风雨bu改',
 							 'Build-Jdk-Spec': 23,
 							 'Bundle-Description': 'java并发控制工具',
 							 'Bundle-Name': 'PDConcurrent',
-							 //							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
+							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
 							 'Bundle-Vendor': 'IntelliJ IDEA',
 							 'Bundle-Version': version,
 							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
 							 'Created-By': 'Gradle 8.10.2')
 	}
+}
+
+/** 编译包 */
+tasks.register('PDConcurrent_bin', Jar) {
+	dependsOn classes
+	destinationDirectory = file('jar')
+	//	manifest { attributes(manifest_val()) }
 	archiveFileName = 'PDConcurrent_bin.jar'
+	archiveClassifier = ''
 	// 打包编译输出
 	from sourceSets.main.output
 }
 
-task PDConcurrent_all(type: Jar) {
+/** 源码包 */
+tasks.register('PDConcurrent_sources', Jar) {
+	dependsOn classes
 	destinationDirectory = file('jar')
-	manifest {
-		attributes('Manifest-Version': '1.0',
-							 'Built-By': 'fybug/风雨bu改',
-							 'Build-Jdk-Spec': 23,
-							 'Bundle-Description': 'java并发控制工具',
-							 'Bundle-Name': 'PDConcurrent',
-							 //							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
-							 'Bundle-Vendor': 'IntelliJ IDEA',
-							 'Bundle-Version': version,
-							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
-							 'Created-By': 'Gradle 8.10.2')
-	}
-	archiveFileName = 'PDConcurrent_all.jar'
-	// 打包编译输出
-	from sourceSets.main.output
+	//	manifest { attributes(manifest_val()) }
+	archiveFileName = 'PDConcurrent_sources.jar'
+	archiveClassifier = 'sources'
 	// 打包源码
 	from sourceSets.main.allSource
+}
+
+tasks.register('PDConcurrent_all', Jar) {
+	dependsOn classes
+	destinationDirectory = file('jar')
+	//	manifest { attributes(manifest_val()) }
+	archiveFileName = 'PDConcurrent_all.jar'
+	archiveClassifier = 'all'
+	// 打包编译输出
+	from sourceSets.main.output
 	from {
 		// implementation 相关的引入解压并打包入新的jar中
 		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 	}
 }
 
-task PDConcurrent_sources(type: Jar) {
-	destinationDirectory = file('jar')
-	manifest {
-		attributes('Manifest-Version': '1.0',
-							 'Built-By': 'fybug/风雨bu改',
-							 'Build-Jdk-Spec': 23,
-							 'Bundle-Description': 'java并发控制工具',
-							 'Bundle-Name': 'PDConcurrent',
-							 //							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
-							 'Bundle-Vendor': 'IntelliJ IDEA',
-							 'Bundle-Version': version,
-							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
-							 'Created-By': 'Gradle 8.10.2')
-	}
-	archiveFileName = 'PDConcurrent_sources.jar'
-	// 打包源码
-	from sourceSets.main.allSource
-}
-
-task release {
+tasks.register('release') {
 	dependsOn clean
 	dependsOn PDConcurrent_bin
 	dependsOn PDConcurrent_sources

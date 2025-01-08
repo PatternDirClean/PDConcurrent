@@ -297,6 +297,8 @@ class RWLock implements SyLock {
 	/**
 	 * 获取读锁{@link Condition}
 	 *
+	 * @return {@link ReentrantReadWriteLock.ReadLock}的{@link Condition}
+	 *
 	 * @see ReentrantReadWriteLock.ReadLock#newCondition()
 	 * @since 0.1.0
 	 */
@@ -306,6 +308,8 @@ class RWLock implements SyLock {
 
 	/**
 	 * 获取写锁{@link Condition}
+	 *
+	 * @return {@link ReentrantReadWriteLock.WriteLock}的{@link Condition}
 	 *
 	 * @see ReentrantReadWriteLock.WriteLock#newCondition()
 	 * @since 0.1.0

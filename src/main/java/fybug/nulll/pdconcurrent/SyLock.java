@@ -66,7 +66,6 @@ interface SyLock {
 	 * @see #lock(LockType, trySupplier, Function, Function)
 	 * @since 0.1.0
 	 */
-	@SuppressWarnings("unused")
 	default
 	void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Consumer<Exception> catchby,
 						@Nullable Runnable finaby)
@@ -77,7 +76,7 @@ interface SyLock {
 		}, catchby == null ? null : e -> {
 			catchby.accept(e);
 			return null;
-		}, finaby == null ? null : r -> {
+		}, finaby == null ? null : _ -> {
 			finaby.run();
 			return null;
 		});
@@ -140,6 +139,8 @@ interface SyLock {
 	 *
 	 * @return 回调返回的内容，遇到异常不返回
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @implSpec 如果有传入 {@code finaby} 回调则返回值由{@code finaby}主导，传入{@code finaby}的值根据是否发生异常传入{@code run}的返回值或{@code null}<br/>
 	 * 任意一个回调为空时直接穿透，使用上一个正确执行的值进行传递或者返回，发生异常会执行{@code finaby}但是不会返回内容
 	 * @see trySupplier
@@ -159,19 +160,19 @@ interface SyLock {
 	 * @param run      执行的回调
 	 * @param finaby   进入finally块后的回调
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see tryRunnable
 	 * @see Runnable
 	 * @see LockType
 	 * @see #trylock(LockType, trySupplier, Function)
 	 * @since 0.1.0
 	 */
-	@SuppressWarnings("unused")
 	default
 	void trylock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Runnable finaby) throws Exception {
 		trylock(lockType, () -> {
 			run.run();
 			return null;
-		}, finaby == null ? null : r -> {
+		}, finaby == null ? null : _ -> {
 			finaby.run();
 			return null;
 		});
@@ -190,6 +191,7 @@ interface SyLock {
 	 *
 	 * @return 回调返回的内容，遇到异常不返回
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see trySupplier
 	 * @see LockType
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -207,6 +209,7 @@ interface SyLock {
 	 * @param lockType 锁类型
 	 * @param run      执行的回调
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see tryRunnable
 	 * @see LockType
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -340,7 +343,6 @@ interface SyLock {
 	 * @see #lock(LockType, trySupplier, Function, Function)
 	 * @since 0.1.0
 	 */
-	@SuppressWarnings("unused")
 	default
 	void read(@NotNull tryRunnable run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby) {
 		lock(LockType.READ, () -> {
@@ -349,7 +351,7 @@ interface SyLock {
 		}, catchby == null ? null : e -> {
 			catchby.accept(e);
 			return null;
-		}, finaby == null ? null : r -> {
+		}, finaby == null ? null : _ -> {
 			finaby.run();
 			return null;
 		});
@@ -395,7 +397,6 @@ interface SyLock {
 	 * @see #lock(LockType, trySupplier, Function, Function)
 	 * @since 0.1.0
 	 */
-	@SuppressWarnings("unused")
 	default
 	void write(@NotNull tryRunnable run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby) {
 		lock(LockType.WRITE, () -> {
@@ -404,7 +405,7 @@ interface SyLock {
 		}, catchby == null ? null : e -> {
 			catchby.accept(e);
 			return null;
-		}, finaby == null ? null : r -> {
+		}, finaby == null ? null : _ -> {
 			finaby.run();
 			return null;
 		});
@@ -422,6 +423,7 @@ interface SyLock {
 	 *
 	 * @return 回调返回的内容，遇到异常不返回
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see trySupplier
 	 * @see LockType#READ
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -437,6 +439,7 @@ interface SyLock {
 	 *
 	 * @param run 执行的回调
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see tryRunnable
 	 * @see LockType#READ
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -460,6 +463,7 @@ interface SyLock {
 	 *
 	 * @return 回调返回的内容，遇到异常不返回
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see trySupplier
 	 * @see LockType#WRITE
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -475,6 +479,7 @@ interface SyLock {
 	 *
 	 * @param run 执行的回调
 	 *
+	 * @throws Exception 异常类型根据实际运行时回调抛出决定
 	 * @see tryRunnable
 	 * @see LockType#WRITE
 	 * @see #trylock(LockType, trySupplier, Function)
@@ -493,6 +498,8 @@ interface SyLock {
 	/**
 	 * 获取传统并发实现
 	 *
+	 * @return 获取的并发控制对象
+	 *
 	 * @see ObjLock
 	 */
 	@NotNull
@@ -502,6 +509,8 @@ interface SyLock {
 	/**
 	 * 获取可重入锁实现
 	 *
+	 * @return 获取的并发控制对象
+	 *
 	 * @see ReLock
 	 */
 	@NotNull
@@ -510,6 +519,8 @@ interface SyLock {
 
 	/**
 	 * 获取读写锁实现
+	 *
+	 * @return 获取的并发控制对象
 	 *
 	 * @see RWLock
 	 */

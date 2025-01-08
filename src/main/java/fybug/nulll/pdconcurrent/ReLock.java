@@ -164,6 +164,8 @@ class ReLock implements SyLock {
 	/**
 	 * 获取{@link Condition}
 	 *
+	 * @return {@link ReentrantLock}的{@link Condition}
+	 *
 	 * @see ReentrantLock#newCondition()
 	 */
 	@NotNull

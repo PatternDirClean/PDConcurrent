@@ -5,6 +5,9 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 /**
+ * @param <T> 传入的参数类型
+ * @param <R> 返回的参数类型
+ *
  * @author fybug
  * @version 0.0.2
  * @see Function
