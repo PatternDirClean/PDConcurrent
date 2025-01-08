@@ -68,7 +68,7 @@ tasks.withType(Jar).configureEach {
 							 'Build-Jdk-Spec': 23,
 							 'Bundle-Description': 'java并发控制工具',
 							 'Bundle-Name': 'PDConcurrent',
-							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
+							 //							 'Bundle-DocURL': 'https://apidoc.gitee.com/fybug/PDConcurrent/',
 							 'Bundle-Vendor': 'IntelliJ IDEA',
 							 'Bundle-Version': version,
 							 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0',
@@ -80,7 +80,6 @@ tasks.withType(Jar).configureEach {
 tasks.register('PDConcurrent_bin', Jar) {
 	dependsOn classes
 	destinationDirectory = file('jar')
-	//	manifest { attributes(manifest_val()) }
 	archiveFileName = 'PDConcurrent_bin.jar'
 	archiveClassifier = ''
 	// 打包编译输出
@@ -91,7 +90,6 @@ tasks.register('PDConcurrent_bin', Jar) {
 tasks.register('PDConcurrent_sources', Jar) {
 	dependsOn classes
 	destinationDirectory = file('jar')
-	//	manifest { attributes(manifest_val()) }
 	archiveFileName = 'PDConcurrent_sources.jar'
 	archiveClassifier = 'sources'
 	// 打包源码
@@ -101,7 +99,6 @@ tasks.register('PDConcurrent_sources', Jar) {
 tasks.register('PDConcurrent_all', Jar) {
 	dependsOn classes
 	destinationDirectory = file('jar')
-	//	manifest { attributes(manifest_val()) }
 	archiveFileName = 'PDConcurrent_all.jar'
 	archiveClassifier = 'all'
 	// 打包编译输出
