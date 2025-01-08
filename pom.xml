@@ -11,9 +11,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.11.3</version>
 				<configuration>
-					<additionalOptions>-Xdoclint:none</additionalOptions>
+					<additionalOptions>
+						<additionalOptions>-Xdoclint:none</additionalOptions>
+					</additionalOptions>
 				</configuration>
 				<executions>
 					<execution>
