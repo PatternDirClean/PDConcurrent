@@ -15,24 +15,24 @@ import jakarta.validation.constraints.NotNull;
  */
 public
 interface tryFunction<T, R> {
-	/** @see Function#apply(Object) */
-	R apply(T t) throws Exception;
+  /** @see Function#apply(Object) */
+  R apply(T t) throws Exception;
 
-	/** @since 0.0.2 */
-	@NotNull
-	default
-	tryConsumer<T> andThen(@Nullable tryConsumer<R> after) {
-		if ( after != null )
-			return t -> after.accept(apply(t));
-		return this::apply;
-	}
+  /** @since 0.0.2 */
+  @NotNull
+  default
+  tryConsumer<T> andThen(@Nullable tryConsumer<R> after) {
+    if ( after != null )
+      return t -> after.accept(apply(t));
+    return this::apply;
+  }
 
-	/** @since 0.0.2 */
-	@NotNull
-	default
-	<R1> tryFunction<T, R1> andThen(@Nullable tryFunction<R, R1> after) {
-		if ( after != null )
-			return t -> after.apply(apply(t));
-		return (tryFunction<T, R1>) this;
-	}
+  /** @since 0.0.2 */
+  @NotNull
+  default
+  <R1> tryFunction<T, R1> andThen(@Nullable tryFunction<R, R1> after) {
+    if ( after != null )
+      return t -> after.apply(apply(t));
+    return (tryFunction<T, R1>) this;
+  }
 }

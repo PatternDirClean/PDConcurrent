@@ -9,10 +9,10 @@ package fybug.nulll.pdconcurrent.e;
  */
 public
 enum LockType {
-	/** 读锁 */
-	READ,
-	/** 写锁 */
-	WRITE,
-	/** 不上锁 */
-	NOLOCK
+  /** 读锁 */
+  READ,
+  /** 写锁 */
+  WRITE,
+  /** 不上锁 */
+  NOLOCK
 }

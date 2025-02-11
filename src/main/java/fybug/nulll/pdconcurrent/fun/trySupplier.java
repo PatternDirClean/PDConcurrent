@@ -15,24 +15,24 @@ import jakarta.validation.constraints.NotNull;
 @FunctionalInterface
 public
 interface trySupplier<R> {
-	/** @see Supplier#get() */
-	R get() throws Exception;
+  /** @see Supplier#get() */
+  R get() throws Exception;
 
-	/** @since 0.0.2 */
-	@NotNull
-	default
-	tryRunnable andThen(@Nullable tryConsumer<R> after) {
-		if ( after != null )
-			return () -> after.accept(get());
-		return this::get;
-	}
+  /** @since 0.0.2 */
+  @NotNull
+  default
+  tryRunnable andThen(@Nullable tryConsumer<R> after) {
+    if ( after != null )
+      return () -> after.accept(get());
+    return this::get;
+  }
 
-	/** @since 0.0.2 */
-	@NotNull
-	default
-	<R1> trySupplier<R1> andThen(@Nullable tryFunction<R, R1> after) {
-		if ( after != null )
-			return () -> after.apply(get());
-		return (trySupplier<R1>) this;
-	}
+  /** @since 0.0.2 */
+  @NotNull
+  default
+  <R1> trySupplier<R1> andThen(@Nullable tryFunction<R, R1> after) {
+    if ( after != null )
+      return () -> after.apply(get());
+    return (trySupplier<R1>) this;
+  }
 }
