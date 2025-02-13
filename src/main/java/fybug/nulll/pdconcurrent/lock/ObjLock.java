@@ -1,7 +1,9 @@
-package fybug.nulll.pdconcurrent;
+package fybug.nulll.pdconcurrent.lock;
 import java.util.function.Function;
 
+import fybug.nulll.pdconcurrent.SyLock;
 import fybug.nulll.pdconcurrent.e.LockType;
+import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.fun.trySupplier;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -13,13 +15,13 @@ import lombok.Getter;
  * <br/><br/>
  * 使用并发管理：
  * {@snippet lang = java:
+ * import fybug.nulll.pdconcurrent.SyLock;
  * public final SyLock lock = new ObjLock();
  * public static void main(String[] args) {
  *   lock.read(() -> System.out.println("asd"));
  * }}
  * 不使用：
  * {@snippet lang = java:
- * public final Object lock = new Object();
  * public static void main(String[] args) {
  *   synchronized ( lock ){
  *     System.out.println("asd");
@@ -27,10 +29,10 @@ import lombok.Getter;
  * }}
  *
  * @author fybug
- * @version 0.1.0
- * @see SyLock
- * @since PDConcurrent 0.0.1
+ * @version 0.1.2
+ * @since lock 0.0.1
  */
+@SuppressWarnings("unused")
 @Getter
 public
 class ObjLock implements SyLock {
@@ -67,7 +69,6 @@ class ObjLock implements SyLock {
    * @return {@inheritDoc}
    *
    * @implNote 使用 {@code synchronized( Object )} 实现的隐式并发域
-   * @see SyLock#lock(LockType, trySupplier, Function, Function)
    * @since 0.1.0
    */
   @Override
@@ -121,12 +122,11 @@ class ObjLock implements SyLock {
    * @return {@inheritDoc}
    *
    * @implNote 使用 {@code synchronized( Object )} 实现的隐式并发域
-   * @see SyLock#trylock(LockType, trySupplier, Function)
-   * @since 0.1.0
+   * @since 0.1.2
    */
   @Override
   public
-  <R> R trylock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
+  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
     R o = null;
     // 不上锁
     if ( lockType == LockType.NOLOCK ) {
@@ -153,4 +153,42 @@ class ObjLock implements SyLock {
     }
     return o;
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param lockType {@inheritDoc}
+   * @param run      {@inheritDoc}
+   * @param catchby  {@inheritDoc}
+   * @param finaby   {@inheritDoc}
+   * @param <R>      {@inheritDoc}
+   *
+   * @return {@inheritDoc}
+   *
+   * @since 0.1.2
+   */
+  @Override
+  public
+  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<Exception, R> catchby,
+                @Nullable Function<R, R> finaby)
+  { return lock(lockType, () -> run.apply(true), catchby, finaby); }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param lockType {@inheritDoc}
+   * @param run      {@inheritDoc}
+   * @param finaby   {@inheritDoc}
+   * @param <R>      {@inheritDoc}
+   *
+   * @return {@inheritDoc}
+   *
+   * @throws Exception {@inheritDoc}
+   * @since 0.1.2
+   */
+  @Override
+  public
+  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<R, R> finaby)
+  throws Exception
+  { return lock(lockType, () -> run.apply(true), finaby); }
 }

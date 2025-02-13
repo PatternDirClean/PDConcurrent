@@ -13,6 +13,8 @@ import jakarta.validation.constraints.NotNull;
  * @see Function
  * @since fun 0.0.4
  */
+@SuppressWarnings("unused")
+@FunctionalInterface
 public
 interface tryFunction<T, R> {
   /** @see Function#apply(Object) */
@@ -33,6 +35,7 @@ interface tryFunction<T, R> {
   <R1> tryFunction<T, R1> andThen(@Nullable tryFunction<R, R1> after) {
     if ( after != null )
       return t -> after.apply(apply(t));
+    //noinspection unchecked
     return (tryFunction<T, R1>) this;
   }
 }

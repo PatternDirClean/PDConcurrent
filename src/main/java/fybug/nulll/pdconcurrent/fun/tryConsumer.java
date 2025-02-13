@@ -12,6 +12,8 @@ import jakarta.validation.constraints.NotNull;
  * @see Consumer
  * @since fun 0.0.4
  */
+@SuppressWarnings("unused")
+@FunctionalInterface
 public
 interface tryConsumer<T> {
   /** @see Consumer#accept(Object) */

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
  * @see Supplier
  * @since fun 0.0.4
  */
+@SuppressWarnings("unused")
 @FunctionalInterface
 public
 interface trySupplier<R> {
@@ -19,6 +20,7 @@ interface trySupplier<R> {
   R get() throws Exception;
 
   /** @since 0.0.2 */
+  @SuppressWarnings("unused")
   @NotNull
   default
   tryRunnable andThen(@Nullable tryConsumer<R> after) {
@@ -28,11 +30,13 @@ interface trySupplier<R> {
   }
 
   /** @since 0.0.2 */
+  @SuppressWarnings("unused")
   @NotNull
   default
   <R1> trySupplier<R1> andThen(@Nullable tryFunction<R, R1> after) {
     if ( after != null )
       return () -> after.apply(get());
+    //noinspection unchecked
     return (trySupplier<R1>) this;
   }
 }

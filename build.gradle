@@ -53,12 +53,12 @@ dependencies {
   // lombok
   testCompileOnly "org.projectlombok:lombok:+"
   testAnnotationProcessor "org.projectlombok:lombok:+"
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter:5.12.0+"
 }
 
 test {
   dependencies {
-    testImplementation "org.junit.platform:junit-platform-launcher"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.12.0+"
   }
   useJUnitPlatform()
 }
@@ -83,7 +83,7 @@ tasks.withType(Jar).configureEach {
 /** 编译包 */
 tasks.register('PDConcurrent_bin', Jar) {
   archiveFileName = 'PDConcurrent_bin.jar'
-  archiveClassifier = ''
+  archiveClassifier = 'bin'
   // 打包编译输出
   from sourceSets.main.output
 }
@@ -95,17 +95,6 @@ tasks.register('PDConcurrent_sources', Jar) {
   // 打包源码
   from sourceSets.main.allSource
 }
-
-//tasks.register('PDConcurrent_all', Jar) {
-//  archiveFileName = 'PDConcurrent_all.jar'
-//  archiveClassifier = 'all'
-//  // 打包编译输出
-//  from sourceSets.main.output
-//  from {
-//    // implementation 相关的引入解压并打包入新的jar中
-//    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-//  }
-//}
 
 tasks.register('release') {
   dependsOn PDConcurrent_bin
