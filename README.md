@@ -1,4 +1,3 @@
-<p align="center">
 <img src="https://images.gitee.com/uploads/images/2020/1022/231243_f2ae30da_2071767.png" width="229" height="210" alt="Icon"/>
 
 # PDConcurrent
@@ -33,7 +32,7 @@ public static
 void main(String[] args) {
   lock.read(() -> {
     // 并发域代码内容
-    [return null;]? // 可选择是否返回
+    return null; // 可选择是否返回
   });
 }
 ```
@@ -56,11 +55,13 @@ void main(String[] args) {
   // 使用
   lock.read(() -> {
     // 并发域代码内容
+    return null;
   });
 
   // 不使用
-  synchronized ( new Object() ){
+  synchronized ( lock ){
     // 并发域代码内容
+    return null;
   }
 }
 
@@ -69,8 +70,6 @@ void main(String[] args) {
 ### ReentrantLock 锁
 
 支持使用`newCondition()`获取`Condition`对象
-
-支持通过`isLocked()`检查是否被占用
 
 ```java
 public static
