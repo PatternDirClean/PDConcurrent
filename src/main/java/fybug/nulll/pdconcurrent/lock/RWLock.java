@@ -195,7 +195,7 @@ class RWLock extends AbstractSyLock {
       // 更新对应锁计数
       if ( lockType == LockType.READ )
         READ_LOCK_COUNTER.getAndIncrement();
-      else //noinspection ConstantValue
+      else // noinspection ConstantValue
         if ( lockType == LockType.WRITE )
           WRITE_LOCK_COUNTER.getAndIncrement();
     } else if ( l.isEmpty() ) {

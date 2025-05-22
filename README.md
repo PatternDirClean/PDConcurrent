@@ -1,4 +1,6 @@
+<p align="center">
 <img src="https://images.gitee.com/uploads/images/2020/1022/231243_f2ae30da_2071767.png" width="229" height="210" alt="Icon"/>
+</p>
 
 # PDConcurrent
 

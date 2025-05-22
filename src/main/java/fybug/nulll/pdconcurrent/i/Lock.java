@@ -10,15 +10,16 @@ import jakarta.validation.constraints.NotNull;
 
 /**
  * <h2>基础锁管理.</h2>
- * 通过传入回调的方式隐藏内部的并发管理方法，并支持复用内部的try块，通过传入的回调插入到catch，finally块中执行<br/>
- * {@code lock()}方法用于根据传入的{@link LockType}申请不同的锁类型进行执行<br/>
+ * 通过传入回调的方式隐藏内部的并发管理方法，并支持复用内部的 try 块，通过传入的回调插入到 catch，finally 块中执行<br/>
+ * {@code lock()} 方法用于根据传入的 {@link LockType} 申请不同的锁类型进行执行<br/>
  * 有可抛出异常的方法变体，可在传入的接口中抛出异常
  *
  * @author fybug
- * @version 0.0.1
+ * @version 0.0.2
  * @see LockType
  * @since i 0.0.1
  */
+public
 interface Lock {
   /**
    * 使用锁执行指定回调
@@ -44,11 +45,6 @@ interface Lock {
    * 使用锁执行指定回调
    * <p>
    * {@link #lock(LockType, trySupplier, Function, Function)}的无返回变体
-   *
-   * @param lockType 锁类型
-   * @param run      执行的回调
-   * @param catchby  进入catch块后的回调，传入当前异常
-   * @param finaby   进入finally块后的回调
    */
   default
   void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Consumer<Exception> catchby,
@@ -88,30 +84,7 @@ interface Lock {
   /**
    * 使用锁执行指定回调
    * <p>
-   * {@link #lock(LockType, trySupplier, Function)}的简易变体
-   *
-   * @param lockType 锁类型
-   * @param run      带返回的回调
-   * @param <R>      要返回的数据类型
-   *
-   * @return 回调返回的内容，遇到异常不返回
-   *
-   * @throws Exception 异常类型根据实际运行时回调抛出决定
-   */
-  default
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run) throws Exception
-  { return lock(lockType, run, null); }
-
-  /**
-   * 使用锁执行指定回调
-   * <p>
    * {@link #lock(LockType, trySupplier, Function)}的无返回变体
-   *
-   * @param lockType 锁类型
-   * @param run      执行的回调
-   * @param finaby   进入finally块后的回调
-   *
-   * @throws Exception 异常类型根据实际运行时回调抛出决定
    */
   default
   void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Runnable finaby) throws Exception {
@@ -123,18 +96,4 @@ interface Lock {
       return null;
     });
   }
-
-  /**
-   * 使用锁执行指定回调
-   * <p>
-   * {@link #lock(LockType, tryRunnable, Runnable)}的简易变体
-   *
-   * @param lockType 锁类型
-   * @param run      执行的回调
-   *
-   * @throws Exception 异常类型根据实际运行时回调抛出决定
-   */
-  default
-  void lock(@NotNull LockType lockType, @NotNull tryRunnable run) throws Exception
-  { lock(lockType, run, null); }
 }
