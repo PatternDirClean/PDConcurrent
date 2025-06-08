@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -38,8 +38,8 @@ interface TryLock {
    * 如果有传入 {@code finaby} 回调则返回值由{@code finaby}主导，传入{@code finaby}的值根据是否发生异常传入{@code run}的返回值或{@code catchby}的返回值<br/>
    * 任意一个回调为空时直接穿透，使用上一个正确执行的值进行传递或者返回，传递值应默认为{@code null}用于应对{@code catchby}和{@code finaby}都为空但是发生了异常的情况
    */
-  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<Exception, R> catchby,
-                @Nullable Function<R, R> finaby);
+  <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,
+                                     @Nullable Function<E, R> catchby, @Nullable Function<R, R> finaby);
 
   /**
    * 尝试使用锁执行指定回调
@@ -47,13 +47,13 @@ interface TryLock {
    * {@link #trylock(LockType, tryFunction, Function, Function)}的无返回变体
    */
   default
-  void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean> run, @Nullable Consumer<Exception> catchby,
-               @Nullable Runnable finaby)
+  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
+                                     @Nullable Consumer<E> catchby, @Nullable Runnable finaby)
   {
     trylock(lockType, b -> {
       run.accept(b);
       return null;
-    }, catchby == null ? null : e -> {
+    }, catchby == null ? null : (E e) -> {
       catchby.accept(e);
       return null;
     }, finaby == null ? null : _ -> {
@@ -75,13 +75,13 @@ interface TryLock {
    *
    * @return 回调返回的内容，遇到异常不返回
    *
-   * @throws Exception 异常类型根据实际运行时回调抛出决定
+   * @throws E 异常类型根据实际运行时回调抛出决定
    * @implSpec 该方法实现时应尽量使用如 {@link ReentrantLock#tryLock()} 之类的方法获取锁，并将是否成功获取传入{@code run}回调中<br/>
    * 如果有传入 {@code finaby} 回调则返回值由{@code finaby}主导，传入{@code finaby}的值根据是否发生异常传入{@code run}的返回值或{@code catchby}的返回值<br/>
    * 任意一个回调为空时直接穿透，使用上一个正确执行的值进行传递或者返回，传递值应默认为{@code null}用于应对{@code catchby}和{@code finaby}都为空但是发生了异常的情况
    */
-  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<R, R> finaby)
-  throws Exception;
+  <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,
+                                     @Nullable Function<R, R> finaby) throws E;
 
   /**
    * 尝试使用锁执行指定回调
@@ -89,7 +89,9 @@ interface TryLock {
    * {@link #trylock(LockType, tryFunction, Function)}的无返回变体
    */
   default
-  void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean> run, @Nullable Runnable finaby) throws Exception {
+  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
+                                     @Nullable Runnable finaby) throws E
+  {
     trylock(lockType, b -> {
       run.accept(b);
       return null;

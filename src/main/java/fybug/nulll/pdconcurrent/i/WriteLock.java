@@ -3,9 +3,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryRunnable;
-import fybug.nulll.pdconcurrent.fun.trySupplier;
 import fybug.nulll.pdconcurrent.i.simple.LockSimple;
+import fybug.nulll.pdutilfunctionexpand.tryRunnable;
+import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -28,7 +28,8 @@ interface WriteLock extends LockSimple {
    * {@link #lock(LockType, trySupplier, Function, Function)}指定写锁的变种
    */
   default
-  <R> R write(@NotNull trySupplier<R> run, @Nullable Function<Exception, R> catchby, @Nullable Function<R, R> finaby)
+  <R, E extends Throwable> R write(@NotNull trySupplier<R, E> run, @Nullable Function<E, R> catchby,
+                                   @Nullable Function<R, R> finaby)
   { return lock(LockType.WRITE, run, catchby, finaby); }
 
   /**
@@ -37,7 +38,7 @@ interface WriteLock extends LockSimple {
    * {@link #lock(LockType, tryRunnable, Consumer, Runnable)}指定写锁的变种
    */
   default
-  void write(@NotNull tryRunnable run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby)
+  <E extends Throwable> void write(@NotNull tryRunnable<E> run, @Nullable Consumer<E> catchby, @Nullable Runnable finaby)
   { lock(LockType.WRITE, run, catchby, finaby); }
 
   /**
@@ -46,7 +47,7 @@ interface WriteLock extends LockSimple {
    * {@link #lock(LockType, trySupplier, Function)}指定写锁的变种
    */
   default
-  <R> R write(@NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception
+  <R, E extends Throwable> R write(@NotNull trySupplier<R, E> run, @Nullable Function<R, R> finaby) throws E
   { return lock(LockType.WRITE, run, finaby); }
 
   /**
@@ -55,6 +56,6 @@ interface WriteLock extends LockSimple {
    * {@link #lock(LockType, tryRunnable, Runnable)}指定写锁的变种
    */
   default
-  void write(@NotNull tryRunnable run, @Nullable Runnable finaby) throws Exception
+  <E extends Throwable> void write(@NotNull tryRunnable<E> run, @Nullable Runnable finaby) throws E
   { lock(LockType.WRITE, run, finaby); }
 }

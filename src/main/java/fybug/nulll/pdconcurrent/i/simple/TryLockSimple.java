@@ -2,9 +2,9 @@ package fybug.nulll.pdconcurrent.i.simple;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.i.TryLock;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -22,7 +22,7 @@ interface TryLockSimple extends TryLock {
    * {@link #trylock(LockType, tryFunction, Function)}的简易变体
    */
   default
-  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run) throws Exception
+  <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run) throws E
   { return trylock(lockType, run, null); }
 
   /**
@@ -31,6 +31,6 @@ interface TryLockSimple extends TryLock {
    * {@link #trylock(LockType, tryConsumer, Runnable)}的简易变体
    */
   default
-  void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean> run) throws Exception
+  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run) throws E
   { trylock(lockType, run, null); }
 }

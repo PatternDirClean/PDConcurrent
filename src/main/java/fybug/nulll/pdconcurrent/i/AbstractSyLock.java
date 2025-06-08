@@ -3,8 +3,8 @@ import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.SyLock;
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
-import fybug.nulll.pdconcurrent.fun.trySupplier;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
+import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -33,8 +33,8 @@ class AbstractSyLock implements SyLock {
    */
   @Override
   public
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Exception, R> catchby,
-             @Nullable Function<R, R> finaby)
+  <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
+                                  @Nullable Function<E, R> catchby, @Nullable Function<R, R> finaby)
   {
     R o = null;
     // 防止finally内的回调抛异常
@@ -44,10 +44,10 @@ class AbstractSyLock implements SyLock {
         lock(lockType);
         // 主要内容
         o = run.get();
-      } catch ( Exception e ) {
+      } catch ( Throwable e ) {
         // 异常处理
         if ( catchby != null )
-          o = catchby.apply(e);
+          o = catchby.apply((E) e);
       } finally {
         // 收尾
         if ( finaby != null )
@@ -73,7 +73,9 @@ class AbstractSyLock implements SyLock {
    */
   @Override
   public
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception {
+  <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
+                                  @Nullable Function<R, R> finaby) throws E
+  {
     R o = null;
     // 防止finally内的回调抛异常
     try {
@@ -108,8 +110,8 @@ class AbstractSyLock implements SyLock {
    */
   @Override
   public
-  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<Exception, R> catchby,
-                @Nullable Function<R, R> finaby)
+  <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,
+                                     @Nullable Function<E, R> catchby, @Nullable Function<R, R> finaby)
   {
     R o = null;
     // 防止finally内的回调抛异常
@@ -117,10 +119,10 @@ class AbstractSyLock implements SyLock {
       try {
         // 上锁
         o = run.apply(trylock(lockType));
-      } catch ( Exception e ) {
+      } catch ( Throwable e ) {
         // 异常处理
         if ( catchby != null )
-          o = catchby.apply(e);
+          o = catchby.apply((E) e);
       } finally {
         // 收尾
         if ( finaby != null )
@@ -147,8 +149,8 @@ class AbstractSyLock implements SyLock {
    */
   @Override
   public
-  <R> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R> run, @Nullable Function<R, R> finaby)
-  throws Exception
+  <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,
+                                     @Nullable Function<R, R> finaby) throws E
   {
     R o = null;
     // 防止finally内的回调抛异常
@@ -172,11 +174,11 @@ class AbstractSyLock implements SyLock {
    *
    * @param lockType 锁类型
    *
-   * @throws Exception 可能抛出的异常
+   * @throws E 可能抛出的异常
    * @implSpec 在此处实现上锁功能
    */
   protected abstract
-  void lock(@NotNull LockType lockType) throws Exception;
+  <E extends Throwable> void lock(@NotNull LockType lockType) throws E;
 
   /**
    * 尝试上锁函数

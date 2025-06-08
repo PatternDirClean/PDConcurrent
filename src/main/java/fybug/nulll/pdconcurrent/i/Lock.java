@@ -3,8 +3,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryRunnable;
-import fybug.nulll.pdconcurrent.fun.trySupplier;
+import fybug.nulll.pdutilfunctionexpand.tryRunnable;
+import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -38,8 +38,8 @@ interface Lock {
    * @implSpec 如果有传入 {@code finaby} 回调则返回值由{@code finaby}主导，传入{@code finaby}的值根据是否发生异常传入{@code run}的返回值或{@code catchby}的返回值<br/>
    * 任意一个回调为空时直接穿透，使用上一个正确执行的值进行传递或者返回，传递值应默认为{@code null}用于应对{@code catchby}和{@code finaby}都为空但是发生了异常的情况
    */
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<Exception, R> catchby,
-             @Nullable Function<R, R> finaby);
+  <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
+                                  @Nullable Function<E, R> catchby, @Nullable Function<R, R> finaby);
 
   /**
    * 使用锁执行指定回调
@@ -47,13 +47,13 @@ interface Lock {
    * {@link #lock(LockType, trySupplier, Function, Function)}的无返回变体
    */
   default
-  void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Consumer<Exception> catchby,
-            @Nullable Runnable finaby)
+  <E extends Throwable> void lock(@NotNull LockType lockType, @NotNull tryRunnable<E> run, @Nullable Consumer<E> catchby,
+                                  @Nullable Runnable finaby)
   {
     lock(lockType, () -> {
       run.run();
       return null;
-    }, catchby == null ? null : e -> {
+    }, catchby == null ? null : (E e) -> {
       catchby.accept(e);
       return null;
     }, finaby == null ? null : _ -> {
@@ -75,11 +75,12 @@ interface Lock {
    *
    * @return 回调返回的内容，遇到异常不返回
    *
-   * @throws Exception 异常类型根据实际运行时回调抛出决定
+   * @throws E 异常类型根据实际运行时回调抛出决定
    * @implSpec 如果有传入 {@code finaby} 回调则返回值由{@code finaby}主导，传入{@code finaby}的值根据是否发生异常传入{@code run}的返回值或{@code null}<br/>
    * 任意一个回调为空时直接穿透，使用上一个正确执行的值进行传递或者返回，发生异常会执行{@code finaby}但是不会返回内容
    */
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run, @Nullable Function<R, R> finaby) throws Exception;
+  <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
+                                  @Nullable Function<R, R> finaby) throws E;
 
   /**
    * 使用锁执行指定回调
@@ -87,7 +88,9 @@ interface Lock {
    * {@link #lock(LockType, trySupplier, Function)}的无返回变体
    */
   default
-  void lock(@NotNull LockType lockType, @NotNull tryRunnable run, @Nullable Runnable finaby) throws Exception {
+  <E extends Throwable> void lock(@NotNull LockType lockType, @NotNull tryRunnable<E> run, @Nullable Runnable finaby)
+  throws E
+  {
     lock(lockType, () -> {
       run.run();
       return null;

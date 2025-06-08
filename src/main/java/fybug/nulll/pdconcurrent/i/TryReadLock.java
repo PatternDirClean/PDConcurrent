@@ -3,9 +3,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.i.simple.TryLockSimple;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -28,8 +28,8 @@ interface TryReadLock extends TryLockSimple {
    * {@link #trylock(LockType, tryFunction, Function, Function)}指定读锁的变种
    */
   default
-  <R> R tryread(@NotNull tryFunction<Boolean, R> run, @Nullable Function<Exception, R> catchby,
-                @Nullable Function<R, R> finaby)
+  <R, E extends Throwable> R tryread(@NotNull tryFunction<Boolean, R, E> run, @Nullable Function<E, R> catchby,
+                                     @Nullable Function<R, R> finaby)
   { return trylock(LockType.READ, run, catchby, finaby); }
 
   /**
@@ -38,7 +38,8 @@ interface TryReadLock extends TryLockSimple {
    * {@link #trylock(LockType, tryConsumer, Consumer, Runnable)}指定读锁的变种
    */
   default
-  void tryread(@NotNull tryConsumer<Boolean> run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby)
+  <E extends Throwable> void tryread(@NotNull tryConsumer<Boolean, E> run, @Nullable Consumer<E> catchby,
+                                     @Nullable Runnable finaby)
   { trylock(LockType.READ, run, catchby, finaby); }
 
   /**
@@ -47,7 +48,7 @@ interface TryReadLock extends TryLockSimple {
    * {@link #trylock(LockType, tryFunction, Function)}指定读锁的变种
    */
   default
-  <R> R tryread(@NotNull tryFunction<Boolean, R> run, @Nullable Function<R, R> finaby) throws Exception
+  <R, E extends Throwable> R tryread(@NotNull tryFunction<Boolean, R, E> run, @Nullable Function<R, R> finaby) throws E
   { return trylock(LockType.READ, run, finaby); }
 
   /**
@@ -56,6 +57,6 @@ interface TryReadLock extends TryLockSimple {
    * {@link #trylock(LockType, tryConsumer, Runnable)}指定读锁的变种
    */
   default
-  void tryread(@NotNull tryConsumer<Boolean> run, @Nullable Runnable finaby) throws Exception
+  <E extends Throwable> void tryread(@NotNull tryConsumer<Boolean, E> run, @Nullable Runnable finaby) throws E
   { trylock(LockType.READ, run, finaby); }
 }

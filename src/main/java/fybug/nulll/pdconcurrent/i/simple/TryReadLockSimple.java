@@ -1,8 +1,8 @@
 package fybug.nulll.pdconcurrent.i.simple;
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.i.TryReadLock;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -21,7 +21,7 @@ interface TryReadLockSimple extends TryReadLock {
    * {@link #trylock(LockType, tryFunction)}指定读锁的变种
    */
   default
-  <R> R tryread(@NotNull tryFunction<Boolean, R> run) throws Exception
+  <R, E extends Throwable> R tryread(@NotNull tryFunction<Boolean, R, E> run) throws E
   { return trylock(LockType.READ, run); }
 
   /**
@@ -30,6 +30,6 @@ interface TryReadLockSimple extends TryReadLock {
    * {@link #trylock(LockType, tryConsumer)}指定读锁的变种
    */
   default
-  void tryread(@NotNull tryConsumer<Boolean> run) throws Exception
+  <E extends Throwable> void tryread(@NotNull tryConsumer<Boolean, E> run) throws E
   { trylock(LockType.READ, run); }
 }

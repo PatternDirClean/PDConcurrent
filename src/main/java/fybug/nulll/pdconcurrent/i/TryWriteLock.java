@@ -3,9 +3,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.i.simple.TryLockSimple;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -28,8 +28,8 @@ interface TryWriteLock extends TryLockSimple {
    * {@link #trylock(LockType, tryFunction, Function, Function)}指定写锁的变种
    */
   default
-  <R> R trywrite(@NotNull tryFunction<Boolean, R> run, @Nullable Function<Exception, R> catchby,
-                 @Nullable Function<R, R> finaby)
+  <R, E extends Throwable> R trywrite(@NotNull tryFunction<Boolean, R, E> run, @Nullable Function<E, R> catchby,
+                                      @Nullable Function<R, R> finaby)
   { return trylock(LockType.WRITE, run, catchby, finaby); }
 
   /**
@@ -38,7 +38,8 @@ interface TryWriteLock extends TryLockSimple {
    * {@link #trylock(LockType, tryConsumer, Consumer, Runnable)}指定写锁的变种
    */
   default
-  void trywrite(@NotNull tryConsumer<Boolean> run, @Nullable Consumer<Exception> catchby, @Nullable Runnable finaby)
+  <E extends Throwable> void trywrite(@NotNull tryConsumer<Boolean, E> run, @Nullable Consumer<E> catchby,
+                                      @Nullable Runnable finaby)
   { trylock(LockType.WRITE, run, catchby, finaby); }
 
   /**
@@ -47,7 +48,7 @@ interface TryWriteLock extends TryLockSimple {
    * {@link #trylock(LockType, tryFunction, Function)}指定写锁的变种
    */
   default
-  <R> R trywrite(@NotNull tryFunction<Boolean, R> run, @Nullable Function<R, R> finaby) throws Exception
+  <R, E extends Throwable> R trywrite(@NotNull tryFunction<Boolean, R, E> run, @Nullable Function<R, R> finaby) throws E
   { return trylock(LockType.WRITE, run, finaby); }
 
   /**
@@ -56,6 +57,6 @@ interface TryWriteLock extends TryLockSimple {
    * {@link #trylock(LockType, tryConsumer, Runnable)}指定写锁的变种
    */
   default
-  void trywrite(@NotNull tryConsumer<Boolean> run, @Nullable Runnable finaby) throws Exception
+  <E extends Throwable> void trywrite(@NotNull tryConsumer<Boolean, E> run, @Nullable Runnable finaby) throws E
   { trylock(LockType.WRITE, run, finaby); }
 }

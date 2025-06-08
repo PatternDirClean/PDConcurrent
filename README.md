@@ -1,6 +1,4 @@
-<p align="center">
 <img src="https://images.gitee.com/uploads/images/2020/1022/231243_f2ae30da_2071767.png" width="229" height="210" alt="Icon"/>
-</p>
 
 # PDConcurrent
 
@@ -8,10 +6,6 @@
 ![JDK 23](https://img.shields.io/badge/JDK-23-green.svg "SDK")
 ![Gradle 8.10.2](https://img.shields.io/badge/Gradle-8.10.2-04303b.svg "tool")
 ![Apache 2](https://img.shields.io/badge/license-Apache%202-blue.svg "License")
-
-[//]: # (-- [Java Doc]&#40;https://apidoc.gitee.com/fybug/PDConcurrent&#41; --)
-
-[//]: # (-- [项目主页]&#40;https://fybug.gitee.io/projectsby/PDConcurrent.html&#41; --)
 
 -------------------------------------------------------------------------------
 
@@ -125,11 +119,18 @@ void main(String[] args) {
 
 请导入其 `jar` 文件,文件在 **发行版** 或项目的 **jar** 文件夹下可以找到
 
-> PDConcurrent_bin.jar 为编译包
+> PDConcurrent.jar 为不包含依赖库的包
+>
+> PDConcurrent_bin.jar 为包含了依赖库的包
+>
+> PDConcurrent_all.jar 为包含了依赖库与源码的包
 >
 > PDConcurrent_sources.jar 为源码包
 
 **发行版中可以看到全部版本<br/>项目下的 jar 文件夹是当前最新的每夜版**
+
+依赖的同系列项目
+- [PDConcurrent](https://github.com/fybug/PDUtilFunctionExpand)
 
 可通过 **WIKI** 或者 **doc文档** 深入学习本工具
 

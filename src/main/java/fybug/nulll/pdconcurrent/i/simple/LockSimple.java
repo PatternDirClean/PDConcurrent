@@ -2,9 +2,9 @@ package fybug.nulll.pdconcurrent.i.simple;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryRunnable;
-import fybug.nulll.pdconcurrent.fun.trySupplier;
 import fybug.nulll.pdconcurrent.i.Lock;
+import fybug.nulll.pdutilfunctionexpand.tryRunnable;
+import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -22,7 +22,7 @@ interface LockSimple extends Lock {
    * {@link #lock(LockType, trySupplier, Function)}的简易变体
    */
   default
-  <R> R lock(@NotNull LockType lockType, @NotNull trySupplier<R> run) throws Exception
+  <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run) throws E
   { return lock(lockType, run, null); }
 
   /**
@@ -31,6 +31,6 @@ interface LockSimple extends Lock {
    * {@link #lock(LockType, tryRunnable, Runnable)}的简易变体
    */
   default
-  void lock(@NotNull LockType lockType, @NotNull tryRunnable run) throws Exception
+  <E extends Throwable> void lock(@NotNull LockType lockType, @NotNull tryRunnable<E> run) throws E
   { lock(lockType, run, null); }
 }

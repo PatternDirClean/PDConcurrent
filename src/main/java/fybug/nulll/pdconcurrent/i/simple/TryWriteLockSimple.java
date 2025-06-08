@@ -1,8 +1,8 @@
 package fybug.nulll.pdconcurrent.i.simple;
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryConsumer;
-import fybug.nulll.pdconcurrent.fun.tryFunction;
 import fybug.nulll.pdconcurrent.i.TryWriteLock;
+import fybug.nulll.pdutilfunctionexpand.tryConsumer;
+import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -21,7 +21,7 @@ interface TryWriteLockSimple extends TryWriteLock {
    * {@link #trylock(LockType, tryFunction)}指定写锁的变种
    */
   default
-  <R> R trywrite(@NotNull tryFunction<Boolean, R> run) throws Exception
+  <R, E extends Throwable> R trywrite(@NotNull tryFunction<Boolean, R, E> run) throws E
   { return trylock(LockType.WRITE, run); }
 
   /**
@@ -30,6 +30,6 @@ interface TryWriteLockSimple extends TryWriteLock {
    * {@link #trylock(LockType, tryConsumer)}指定写锁的变种
    */
   default
-  void trywrite(@NotNull tryConsumer<Boolean> run) throws Exception
+  <E extends Throwable> void trywrite(@NotNull tryConsumer<Boolean, E> run) throws E
   { trylock(LockType.WRITE, run); }
 }

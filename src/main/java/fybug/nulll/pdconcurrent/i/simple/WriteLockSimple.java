@@ -1,8 +1,8 @@
 package fybug.nulll.pdconcurrent.i.simple;
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.fun.tryRunnable;
-import fybug.nulll.pdconcurrent.fun.trySupplier;
 import fybug.nulll.pdconcurrent.i.WriteLock;
+import fybug.nulll.pdutilfunctionexpand.tryRunnable;
+import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -21,7 +21,7 @@ interface WriteLockSimple extends WriteLock {
    * {@link #lock(LockType, trySupplier)}指定写锁的变种
    */
   default
-  <R> R write(@NotNull trySupplier<R> run) throws Exception
+  <R, E extends Throwable> R write(@NotNull trySupplier<R, E> run) throws E
   { return lock(LockType.WRITE, run); }
 
   /**
@@ -30,6 +30,6 @@ interface WriteLockSimple extends WriteLock {
    * {@link #lock(LockType, tryRunnable)}指定写锁的变种
    */
   default
-  void write(@NotNull tryRunnable run) throws Exception
+  <E extends Throwable> void write(@NotNull tryRunnable<E> run) throws E
   { lock(LockType.WRITE, run); }
 }

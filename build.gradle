@@ -8,7 +8,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 group 'fybug.nulll'
-version = '0.1.3'
+version = '0.1.4'
 
 java {
   toolchain {
@@ -82,15 +82,41 @@ tasks.withType(Jar).configureEach {
 }
 
 /** 编译包 */
-tasks.register('PDConcurrent_bin', Jar) {
-  archiveFileName = 'PDConcurrent_bin.jar'
+tasks.register('build_by', Jar) {
+  archiveFileName = 'PDConcurrent.jar'
   archiveClassifier = 'bin'
   // 打包编译输出
   from sourceSets.main.output
 }
 
+/** 编译包 */
+tasks.register('build_bin', Jar) {
+  archiveFileName = 'PDConcurrent_bin.jar'
+  archiveClassifier = 'bin'
+  // 打包编译输出
+  from sourceSets.main.output
+  from {
+    // implementation 相关的引入解压并打包入新的jar中
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
 /** 源码包 */
-tasks.register('PDConcurrent_sources', Jar) {
+tasks.register('build_all', Jar) {
+  archiveFileName = 'PDConcurrent_all.jar'
+  archiveClassifier = 'all'
+  // 打包编译输出
+  from sourceSets.main.output
+  // 打包源码
+  from sourceSets.main.allSource
+  from {
+    // implementation 相关的引入解压并打包入新的jar中
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
+/** 源码包 */
+tasks.register('build_sources', Jar) {
   archiveFileName = 'PDConcurrent_sources.jar'
   archiveClassifier = 'sources'
   // 打包源码
@@ -98,6 +124,8 @@ tasks.register('PDConcurrent_sources', Jar) {
 }
 
 tasks.register('release') {
-  dependsOn PDConcurrent_bin
-  dependsOn PDConcurrent_sources
+  dependsOn build_by
+  dependsOn build_all
+  dependsOn build_bin
+  dependsOn build_sources
 }
