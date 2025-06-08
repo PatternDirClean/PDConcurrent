@@ -31,6 +31,7 @@ class AbstractSyLock implements SyLock {
    *
    * @implNote 使用 {@link #lock(LockType)} 与 {@link #unlock()} 方法实现上锁与解锁
    */
+  @SuppressWarnings("unchecked")
   @Override
   public
   <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
@@ -108,6 +109,7 @@ class AbstractSyLock implements SyLock {
    *
    * @implNote 使用 {@link #trylock(LockType)} 与 {@link #unlock()} 方法实现上锁与解锁
    */
+  @SuppressWarnings("unchecked")
   @Override
   public
   <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,

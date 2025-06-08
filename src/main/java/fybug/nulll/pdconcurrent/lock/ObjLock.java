@@ -71,6 +71,7 @@ class ObjLock implements SyLock {
    * @implNote 使用 {@code synchronized( Object )} 实现的隐式并发域
    * @since 0.1.0
    */
+  @SuppressWarnings("unchecked")
   @Override
   public
   <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
