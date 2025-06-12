@@ -1,18 +1,18 @@
 package fybug.nulll.pdconcurrent.lock;
 import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.i.AbstractSyLock;
+import fybug.nulll.pdconcurrent.i.AbstractRWSyLock;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.SneakyThrows;
 
 /**
  * <h2>使用{@link ReentrantReadWriteLock}实现的并发管理.</h2>
  * 使用{@link ReentrantReadWriteLock}实现并发域，读写锁均为标准实现，支持通过{@link #toread()}进行锁降级<br/>
- * 使用可中断的上锁操作{@link ReentrantReadWriteLock.ReadLock#lockInterruptibly()}和{@link ReentrantReadWriteLock.WriteLock#lockInterruptibly()}实现上锁<br/>
  * 支持使用{@link #newReadCondition()}{@link #newWriteCondition()}获取{@link Condition}
  * <br/><br/>
  * 使用并发管理：
@@ -46,22 +46,15 @@ import lombok.Getter;
  * }}
  *
  * @author fybug
- * @version 0.1.1
+ * @version 0.1.2
  * @see ReentrantReadWriteLock
  * @see ReentrantReadWriteLock.ReadLock
  * @see ReentrantReadWriteLock.WriteLock
  * @since lock 0.0.1
  */
 @SuppressWarnings("unused")
-@Getter
 public
-class RWLock extends AbstractSyLock {
-  /** 锁 */
-  private final ReentrantReadWriteLock LOCK;
-  /** 读锁 */
-  private final ReentrantReadWriteLock.ReadLock Read_LOCK;
-  /** 写锁 */
-  private final ReentrantReadWriteLock.WriteLock Write_LOCK;
+class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
   /**
    * 每个线程的锁状态记录
    *
@@ -73,13 +66,13 @@ class RWLock extends AbstractSyLock {
    *
    * @since 0.1.1
    */
-  private final AtomicLong READ_LOCK_COUNTER = new AtomicLong();
+  private final WeakHashMap<ReentrantReadWriteLock, AtomicLong> READ_LOCK_COUNTER = new WeakHashMap<>();
   /**
    * 写锁计数
    *
    * @since 0.1.1
    */
-  private final AtomicLong WRITE_LOCK_COUNTER = new AtomicLong();
+  private final WeakHashMap<ReentrantReadWriteLock, AtomicLong> WRITE_LOCK_COUNTER = new WeakHashMap<>();
 
   /**
    * 构建并发管理
@@ -105,11 +98,7 @@ class RWLock extends AbstractSyLock {
    * @since 0.1.0
    */
   public
-  RWLock(@NotNull ReentrantReadWriteLock lock) {
-    LOCK = lock;
-    Read_LOCK = LOCK.readLock();
-    Write_LOCK = LOCK.writeLock();
-  }
+  RWLock(@NotNull ReentrantReadWriteLock lock) { super(new LockThreadContext<>(lock, true, null)); }
 
   /**
    * 获取当前线程锁记录
@@ -132,34 +121,64 @@ class RWLock extends AbstractSyLock {
   }
 
   /**
+   * 获取当前线程读锁计数
+   *
+   * @return 读锁计数对象
+   *
+   * @since 0.1.2
+   */
+  @NotNull
+  private
+  AtomicLong getReadLockCounter(@NotNull ReentrantReadWriteLock lock)
+  { return READ_LOCK_COUNTER.computeIfAbsent(lock, k -> new AtomicLong()); }
+
+  /**
+   * 获取当前线程写锁计数
+   *
+   * @return 写锁计数对象
+   *
+   * @since 0.1.2
+   */
+  @NotNull
+  private
+  AtomicLong getWriteLockCounter(@NotNull ReentrantReadWriteLock lock)
+  { return WRITE_LOCK_COUNTER.computeIfAbsent(lock, k -> new AtomicLong()); }
+
+  /**
    * {@inheritDoc}
    *
    * @param lockType {@inheritDoc}
    *
-   * @throws Exception {@inheritDoc}
-   * @implNote 使用 {@link ReentrantReadWriteLock} 实现的并发域，使用了{@code lockInterruptibly()}进行可中断的上锁操作<br/>
+   * @implNote 常规锁使用 {@code lock()}上锁，可中断锁使用{@code lockInterruptibly()}操作<br/>
    * 会记录本次锁类型并记录读写锁的计数
    * @since 0.1.1
    */
+  @SneakyThrows
   @Override
   protected
-  void lock(@NotNull LockType lockType) throws InterruptedException {
-    // 获取记录列表
-    var l = getCurrentThreadLockState();
+  void lock(@NotNull LockType lockType) {
+    var c = getLockThreadContext();
     // 检查锁类型进行上锁，并更新对应锁计数
     if ( lockType != LockType.NOLOCK ) {
       if ( lockType == LockType.READ ) {
-        Read_LOCK.lockInterruptibly();
-        READ_LOCK_COUNTER.getAndIncrement();
+        // 上锁
+        if ( c.isInterruptiblyLock() )
+          c.getLock().readLock().lockInterruptibly();
+        else
+          c.getLock().readLock().lock();
+        getReadLockCounter(c.getLock()).getAndIncrement();
       } else if ( lockType == LockType.WRITE ) {
-        Write_LOCK.lockInterruptibly();
-        WRITE_LOCK_COUNTER.getAndIncrement();
+        // 上锁
+        if ( c.isInterruptiblyLock() )
+          c.getLock().writeLock().lockInterruptibly();
+        else
+          c.getLock().writeLock().lock();
+        getWriteLockCounter(c.getLock()).getAndIncrement();
       }
       // 记录本次锁类型
-      l.add(lockType);
-    } else if ( l.isEmpty() ) {
+      getCurrentThreadLockState().add(lockType);
+    } else if ( getCurrentThreadLockState().isEmpty() )
       LOCK_STATE.remove();
-    }
   }
 
   /**
@@ -169,38 +188,45 @@ class RWLock extends AbstractSyLock {
    *
    * @return {@inheritDoc}
    *
-   * @implNote 使用 {@link ReentrantReadWriteLock} 实现的并发域，使用了{@code trylock()}实现<br/>
-   * 会记录本次锁类型并记录读写锁的计数
+   * @implNote 使用 {@code trylock()} 实现，会记录本次锁类型并记录读写锁的计数
    * @since 0.1.1
    */
+  @SuppressWarnings("ConstantValue")
+  @SneakyThrows
   @Override
   protected
   boolean trylock(@NotNull LockType lockType) {
-    // 获取记录列表
-    var l = getCurrentThreadLockState();
     // 是否成功
     boolean success = false;
+    var c = getLockThreadContext();
+    var t = c.getTryTimeout();
 
     // 检查锁类型并上锁
     if ( lockType != LockType.NOLOCK ) {
-      if ( lockType == LockType.READ )
-        success = Read_LOCK.tryLock();
-      else if ( lockType == LockType.WRITE )
-        success = Write_LOCK.tryLock();
+      if ( lockType == LockType.READ ) {
+        if ( t == null )
+          success = c.getLock().readLock().tryLock();
+        else
+          success = c.getLock().readLock().tryLock(t.getTimeout(), t.getUnit());
+      } else if ( lockType == LockType.WRITE ) {
+        if ( t == null )
+          success = c.getLock().writeLock().tryLock();
+        else
+          success = c.getLock().writeLock().tryLock(t.getTimeout(), t.getUnit());
+      }
     }
+
     // 是否成功
     if ( success ) {
-      // 记录本次锁类型
-      l.add(lockType);
       // 更新对应锁计数
       if ( lockType == LockType.READ )
-        READ_LOCK_COUNTER.getAndIncrement();
-      else // noinspection ConstantValue
-        if ( lockType == LockType.WRITE )
-          WRITE_LOCK_COUNTER.getAndIncrement();
-    } else if ( l.isEmpty() ) {
+        getReadLockCounter(c.getLock()).getAndIncrement();
+      else if ( lockType == LockType.WRITE )
+        getWriteLockCounter(c.getLock()).getAndIncrement();
+      // 记录本次锁类型
+      getCurrentThreadLockState().add(lockType);
+    } else if ( getCurrentThreadLockState().isEmpty() )
       LOCK_STATE.remove();
-    }
 
     return success;
   }
@@ -225,16 +251,16 @@ class RWLock extends AbstractSyLock {
       LOCK_STATE.remove();
       return;
     }
-
+    var c = getLockThreadContext();
     // 获取最后锁类型
     var lockType = l.removeLast();
     // 检查锁类型解锁，并更新对应锁计数
     if ( lockType == LockType.READ ) {
-      Read_LOCK.unlock();
-      READ_LOCK_COUNTER.getAndDecrement();
+      c.getLock().readLock().unlock();
+      getReadLockCounter(c.getLock()).getAndDecrement();
     } else if ( lockType == LockType.WRITE ) {
-      Write_LOCK.unlock();
-      WRITE_LOCK_COUNTER.getAndDecrement();
+      c.getLock().writeLock().unlock();
+      getWriteLockCounter(c.getLock()).getAndDecrement();
     }
 
     // 记录清空
@@ -255,6 +281,7 @@ class RWLock extends AbstractSyLock {
   boolean toread() {
     // 获取记录列表
     var l = getCurrentThreadLockState();
+    var c = getLockThreadContext();
     // 没有上锁
     if ( l.isEmpty() ) {
       LOCK_STATE.remove();
@@ -268,22 +295,23 @@ class RWLock extends AbstractSyLock {
       return true;
     else if ( lockType == LockType.WRITE ) {
       // 锁降级
-      Read_LOCK.lock();
-      Write_LOCK.unlock();
+      c.getLock().readLock().lock();
+      c.getLock().writeLock().unlock();
       // 更新记录
-      l.set(l.size() - 1, LockType.WRITE);
+      l.set(l.size() - 1, LockType.READ);
       // 更新计数
-      WRITE_LOCK_COUNTER.getAndDecrement();
-      READ_LOCK_COUNTER.getAndIncrement();
+      getWriteLockCounter(c.getLock()).getAndDecrement();
+      getReadLockCounter(c.getLock()).getAndIncrement();
       return true;
     }
     return false;
   }
 
   /**
-   * 检查锁是否被占用
+   * /**
+   * {@inheritDoc}
    *
-   * @return 是否被占用
+   * @return {@inheritDoc}
    *
    * @since 0.1.0
    */
@@ -299,7 +327,7 @@ class RWLock extends AbstractSyLock {
    * @since 0.1.0
    */
   public
-  boolean isReadLocked() { return isWriteLocked() || READ_LOCK_COUNTER.get() > 0; }
+  boolean isReadLocked() { return isWriteLocked() || getReadLockCounter(getLockThreadContext().getLock()).get() > 0; }
 
   /**
    * 检查写锁是否被占用
@@ -309,12 +337,13 @@ class RWLock extends AbstractSyLock {
    * @since 0.1.0
    */
   public
-  boolean isWriteLocked() { return WRITE_LOCK_COUNTER.get() > 0; }
+  boolean isWriteLocked() { return getWriteLockCounter(getLockThreadContext().getLock()).get() > 0; }
 
   /**
-   * 检查当前线程是否持有锁
+   * /**
+   * {@inheritDoc}
    *
-   * @return 当前线程是否拥有锁
+   * @return {@inheritDoc}
    *
    * @since 0.1.1
    */
@@ -330,20 +359,7 @@ class RWLock extends AbstractSyLock {
    * @since 0.1.1
    */
   public
-  boolean isReadLockedCurrentThread() {
-    // 获取锁队列
-    var l = LOCK_STATE.get();
-    // 没有记录
-    if ( l == null )
-      return false;
-    // 没有上锁
-    if ( l.isEmpty() ) {
-      LOCK_STATE.remove();
-      return false;
-    }
-    // 检查是否占用读锁
-    return l.contains(LockType.WRITE) || l.contains(LockType.READ);
-  }
+  boolean isReadLockedCurrentThread() { return checkIsLockedCurrentThread(LOCK_STATE.get(), LockType.READ); }
 
   /**
    * 检查当前线程是否持有写锁
@@ -353,9 +369,18 @@ class RWLock extends AbstractSyLock {
    * @since 0.1.1
    */
   public
-  boolean isWriteLockedCurrentThread() {
-    // 获取锁队列
-    var l = LOCK_STATE.get();
+  boolean isWriteLockedCurrentThread() { return checkIsLockedCurrentThread(LOCK_STATE.get(), LockType.WRITE); }
+
+  /**
+   * 检查是否有对应的锁在当前线程持有
+   *
+   * @param l        锁记录
+   * @param lockType 要检查的锁类型，包含其中一个则返回true
+   *
+   * @since 0.1.2
+   */
+  private
+  boolean checkIsLockedCurrentThread(@NotNull LinkedList<LockType> l, @NotNull LockType... lockType) {
     // 没有记录
     if ( l == null )
       return false;
@@ -364,8 +389,10 @@ class RWLock extends AbstractSyLock {
       LOCK_STATE.remove();
       return false;
     }
-    // 检查是否占用读锁
-    return l.contains(LockType.WRITE);
+    for ( var t : lockType )
+      if ( l.contains(t) )
+        return true;
+    return false;
   }
 
   /**
@@ -378,7 +405,7 @@ class RWLock extends AbstractSyLock {
    */
   @NotNull
   public
-  Condition newReadCondition() { return Read_LOCK.newCondition(); }
+  Condition newReadCondition() { return getLockThreadContext().getLock().readLock().newCondition(); }
 
   /**
    * 获取写锁{@link Condition}
@@ -390,5 +417,5 @@ class RWLock extends AbstractSyLock {
    */
   @NotNull
   public
-  Condition newWriteCondition() { return Write_LOCK.newCondition(); }
+  Condition newWriteCondition() { return getLockThreadContext().getLock().writeLock().newCondition(); }
 }

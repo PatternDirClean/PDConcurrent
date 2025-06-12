@@ -1,16 +1,16 @@
 package fybug.nulll.pdconcurrent.lock;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdconcurrent.i.AbstractSyLock;
+import fybug.nulll.pdconcurrent.i.AbstractRWSyLock;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.SneakyThrows;
 
 /**
  * <h2>使用{@link ReentrantLock}实现的并发管理.</h2>
  * 使用{@link ReentrantLock}实现并发域，读写锁均为同一个实现<br/>
- * 使用了可中断的上锁操作{@link ReentrantLock#lockInterruptibly()}实现<br/>
  * 支持使用{@link #newCondition()}获取{@link Condition}
  * <br/><br/>
  * 使用并发管理：
@@ -34,17 +34,13 @@ import lombok.Getter;
  * }}
  *
  * @author fybug
- * @version 0.1.1
+ * @version 0.1.3
  * @see ReentrantLock
  * @since lock 0.0.1
  */
 @SuppressWarnings("unused")
-@Getter
 public
-class ReLock extends AbstractSyLock {
-  /** 锁 */
-  private final ReentrantLock LOCK;
-
+class ReLock extends AbstractRWSyLock<ReentrantLock> {
   /**
    * 构建并发管理
    * <p>
@@ -69,22 +65,27 @@ class ReLock extends AbstractSyLock {
    * @since 0.1.0
    */
   public
-  ReLock(@NotNull ReentrantLock LOCK) { this.LOCK = LOCK; }
+  ReLock(@NotNull ReentrantLock LOCK) { super(new LockThreadContext<>(LOCK, true, null)); }
 
   /**
    * {@inheritDoc}
    *
    * @param lockType {@inheritDoc}
    *
-   * @throws InterruptedException 所在线程被中断
-   * @implNote 使用 {@link ReentrantLock} 实现的并发域，使用了{@link ReentrantLock#lockInterruptibly()}进行可中断的上锁操作
+   * @implNote 常规锁使用 {@link ReentrantLock#lock()}，可中断锁使用{@link ReentrantLock#lockInterruptibly()}实现
    * @since 0.1.1
    */
+  @SneakyThrows
   @Override
   protected
-  void lock(@NotNull LockType lockType) throws InterruptedException {
-    if ( lockType != LockType.NOLOCK )
-      LOCK.lockInterruptibly();
+  void lock(@NotNull LockType lockType) {
+    var c = getLockThreadContext();
+    if ( lockType != LockType.NOLOCK ) {
+      if ( c.isInterruptiblyLock() )
+        c.getLock().lockInterruptibly();
+      else
+        c.getLock().lock();
+    }
   }
 
   /**
@@ -94,14 +95,21 @@ class ReLock extends AbstractSyLock {
    *
    * @return {@inheritDoc}
    *
-   * @implNote 使用 {@link ReentrantLock} 实现的并发域，使用了{@link ReentrantLock#tryLock()}实现
+   * @implNote 无参数时使用 {@link ReentrantLock#tryLock()} 实现，设置了超时时间时使用{@link ReentrantLock#tryLock(long, TimeUnit)}
    * @since 0.1.1
    */
+  @SneakyThrows
   @Override
   protected
   boolean trylock(@NotNull LockType lockType) {
-    if ( lockType != LockType.NOLOCK )
-      return LOCK.tryLock();
+    var c = getLockThreadContext();
+    var t = c.getTryTimeout();
+    if ( lockType != LockType.NOLOCK ) {
+      if ( t == null )
+        return c.getLock().tryLock();
+      else
+        return c.getLock().tryLock(t.getTimeout(), t.getUnit());
+    }
     return false;
   }
 
@@ -114,8 +122,9 @@ class ReLock extends AbstractSyLock {
   @Override
   public
   void unlock() {
-    if ( LOCK.isHeldByCurrentThread() )
-      LOCK.unlock();
+    var lock = getLockThreadContext().getLock();
+    if ( lock.isHeldByCurrentThread() )
+      lock.unlock();
   }
 
   /**
@@ -127,7 +136,7 @@ class ReLock extends AbstractSyLock {
    */
   @NotNull
   public
-  Condition newCondition() { return LOCK.newCondition(); }
+  Condition newCondition() { return getLockThreadContext().getLock().newCondition(); }
 
   /**
    * {@inheritDoc}
@@ -136,7 +145,7 @@ class ReLock extends AbstractSyLock {
    */
   @Override
   public
-  boolean isLocked() { return LOCK.isLocked(); }
+  boolean isLocked() { return getLockThreadContext().getLock().isLocked(); }
 
   /**
    * {@inheritDoc}
@@ -147,5 +156,5 @@ class ReLock extends AbstractSyLock {
    */
   @Override
   public
-  boolean isLockedCurrentThread() { return LOCK.isHeldByCurrentThread(); }
+  boolean isLockedCurrentThread() { return getLockThreadContext().getLock().isHeldByCurrentThread(); }
 }

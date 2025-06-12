@@ -20,7 +20,7 @@ import jakarta.validation.constraints.NotNull;
  * 使用 {@code new**Lock()} 的方法获取不同并发管理的实例<br/>
  *
  * @author fybug
- * @version 0.1.3
+ * @version 0.1.4
  * @since PDConcurrent 0.0.1
  */
 @SuppressWarnings("unused")

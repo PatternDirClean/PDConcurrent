@@ -1,9 +1,7 @@
 package fybug.nulll.pdconcurrent.i;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdutilfunctionexpand.tryRunnable;
 import fybug.nulll.pdutilfunctionexpand.trySupplier;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +30,7 @@ interface Lock {
    * @param catchby  进入catch块后的回调，传入当前异常
    * @param finaby   进入finally块后的回调，传入前两个回调的返回值
    * @param <R>      要返回的数据类型
+   * @param <E>      运行时异常类型
    *
    * @return 回调返回的内容
    *
@@ -44,27 +43,6 @@ interface Lock {
   /**
    * 使用锁执行指定回调
    * <p>
-   * {@link #lock(LockType, trySupplier, Function, Function)}的无返回变体
-   */
-  default
-  <E extends Throwable> void lock(@NotNull LockType lockType, @NotNull tryRunnable<E> run, @Nullable Consumer<E> catchby,
-                                  @Nullable Runnable finaby)
-  {
-    lock(lockType, () -> {
-      run.run();
-      return null;
-    }, catchby == null ? null : (E e) -> {
-      catchby.accept(e);
-      return null;
-    }, finaby == null ? null : _ -> {
-      finaby.run();
-      return null;
-    });
-  }
-
-  /**
-   * 使用锁执行指定回调
-   * <p>
    * {@link #lock(LockType, trySupplier, Function, Function)}的可抛异常变体<br/>
    * 运行时改为使用try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出
    *
@@ -72,6 +50,7 @@ interface Lock {
    * @param run      带返回的回调
    * @param finaby   进入finally块后的回调，传入前一个回调的返回值，遇到异常传入{@code null}
    * @param <R>      要返回的数据类型
+   * @param <E>      运行时异常类型
    *
    * @return 回调返回的内容，遇到异常不返回
    *
@@ -81,22 +60,4 @@ interface Lock {
    */
   <R, E extends Throwable> R lock(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
                                   @Nullable Function<R, R> finaby) throws E;
-
-  /**
-   * 使用锁执行指定回调
-   * <p>
-   * {@link #lock(LockType, trySupplier, Function)}的无返回变体
-   */
-  default
-  <E extends Throwable> void lock(@NotNull LockType lockType, @NotNull tryRunnable<E> run, @Nullable Runnable finaby)
-  throws E
-  {
-    lock(lockType, () -> {
-      run.run();
-      return null;
-    }, finaby == null ? null : _ -> {
-      finaby.run();
-      return null;
-    });
-  }
 }

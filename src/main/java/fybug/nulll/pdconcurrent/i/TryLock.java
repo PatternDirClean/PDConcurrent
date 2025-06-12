@@ -1,10 +1,8 @@
 package fybug.nulll.pdconcurrent.i;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
-import fybug.nulll.pdutilfunctionexpand.tryConsumer;
 import fybug.nulll.pdutilfunctionexpand.tryFunction;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +29,7 @@ interface TryLock {
    * @param catchby  进入catch块后的回调，传入当前异常
    * @param finaby   进入finally块后的回调，传入前两个回调的返回值
    * @param <R>      要返回的数据类型
+   * @param <E>      运行时异常类型
    *
    * @return 回调返回的内容
    *
@@ -44,27 +43,6 @@ interface TryLock {
   /**
    * 尝试使用锁执行指定回调
    * <p>
-   * {@link #trylock(LockType, tryFunction, Function, Function)}的无返回变体
-   */
-  default
-  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
-                                     @Nullable Consumer<E> catchby, @Nullable Runnable finaby)
-  {
-    trylock(lockType, b -> {
-      run.accept(b);
-      return null;
-    }, catchby == null ? null : (E e) -> {
-      catchby.accept(e);
-      return null;
-    }, finaby == null ? null : _ -> {
-      finaby.run();
-      return null;
-    });
-  }
-
-  /**
-   * 尝试使用锁执行指定回调
-   * <p>
    * {@link #trylock(LockType, tryFunction, Function, Function)}的可抛异常变体<br/>
    * 运行时改为使用try-finally块，通过两个回调参数插入不同的块中执行，遇到异常会抛出
    *
@@ -72,6 +50,7 @@ interface TryLock {
    * @param run      带返回的回调，传入参数是否获取到锁
    * @param finaby   进入finally块后的回调，传入前两个回调的返回值，遇到异常传入{@code null}
    * @param <R>      要返回的数据类型
+   * @param <E>      运行时异常类型
    *
    * @return 回调返回的内容，遇到异常不返回
    *
@@ -82,22 +61,4 @@ interface TryLock {
    */
   <R, E extends Throwable> R trylock(@NotNull LockType lockType, @NotNull tryFunction<Boolean, R, E> run,
                                      @Nullable Function<R, R> finaby) throws E;
-
-  /**
-   * 尝试使用锁执行指定回调
-   * <p>
-   * {@link #trylock(LockType, tryFunction, Function)}的无返回变体
-   */
-  default
-  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
-                                     @Nullable Runnable finaby) throws E
-  {
-    trylock(lockType, b -> {
-      run.accept(b);
-      return null;
-    }, finaby == null ? null : _ -> {
-      finaby.run();
-      return null;
-    });
-  }
 }

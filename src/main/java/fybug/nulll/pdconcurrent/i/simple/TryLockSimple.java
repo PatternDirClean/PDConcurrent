@@ -1,10 +1,12 @@
 package fybug.nulll.pdconcurrent.i.simple;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fybug.nulll.pdconcurrent.e.LockType;
 import fybug.nulll.pdconcurrent.i.TryLock;
 import fybug.nulll.pdutilfunctionexpand.tryConsumer;
 import fybug.nulll.pdutilfunctionexpand.tryFunction;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -16,6 +18,45 @@ import jakarta.validation.constraints.NotNull;
  */
 public
 interface TryLockSimple extends TryLock {
+  /**
+   * 尝试使用锁执行指定回调
+   * <p>
+   * {@link #trylock(LockType, tryFunction, Function, Function)}的无返回变体
+   */
+  default
+  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
+                                     @Nullable Consumer<E> catchby, @Nullable Runnable finaby)
+  {
+    trylock(lockType, b -> {
+      run.accept(b);
+      return null;
+    }, catchby == null ? null : (E e) -> {
+      catchby.accept(e);
+      return null;
+    }, finaby == null ? null : _ -> {
+      finaby.run();
+      return null;
+    });
+  }
+
+  /**
+   * 尝试使用锁执行指定回调
+   * <p>
+   * {@link #trylock(LockType, tryFunction, Function)}的无返回变体
+   */
+  default
+  <E extends Throwable> void trylock(@NotNull LockType lockType, @NotNull tryConsumer<Boolean, E> run,
+                                     @Nullable Runnable finaby) throws E
+  {
+    trylock(lockType, b -> {
+      run.accept(b);
+      return null;
+    }, finaby == null ? null : _ -> {
+      finaby.run();
+      return null;
+    });
+  }
+
   /**
    * 尝试使用锁执行指定回调
    * <p>
