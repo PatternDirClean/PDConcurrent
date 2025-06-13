@@ -167,7 +167,7 @@ class AbstractSyLock<T> implements SyLock {
    *
    * @param lockThreadContext 新的默认上下文参数
    */
-  public
+  public synchronized
   void setDefaultLockThreadContext(@NotNull LockThreadContext<T> lockThreadContext)
   { this.defaultLockThreadContext = lockThreadContext; }
 

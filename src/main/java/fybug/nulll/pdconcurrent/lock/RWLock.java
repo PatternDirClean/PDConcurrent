@@ -1,5 +1,6 @@
 package fybug.nulll.pdconcurrent.lock;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -60,7 +61,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    *
    * @see LockType
    */
-  private final ThreadLocal<LinkedList<LockType>> LOCK_STATE = new ThreadLocal<>();
+  private final ThreadLocal<List<LockType>> LOCK_STATE = new ThreadLocal<>();
   /**
    * 读锁计数
    *
@@ -109,7 +110,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    */
   @NotNull
   private
-  LinkedList<LockType> getCurrentThreadLockState() {
+  List<LockType> getCurrentThreadLockState() {
     // 获取记录
     var l = LOCK_STATE.get();
     // 保证记录存在
@@ -128,7 +129,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    * @since 0.1.2
    */
   @NotNull
-  private
+  private synchronized
   AtomicLong getReadLockCounter(@NotNull ReentrantReadWriteLock lock)
   { return READ_LOCK_COUNTER.computeIfAbsent(lock, k -> new AtomicLong()); }
 
@@ -140,7 +141,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    * @since 0.1.2
    */
   @NotNull
-  private
+  private synchronized
   AtomicLong getWriteLockCounter(@NotNull ReentrantReadWriteLock lock)
   { return WRITE_LOCK_COUNTER.computeIfAbsent(lock, k -> new AtomicLong()); }
 
@@ -308,7 +309,6 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
   }
 
   /**
-   * /**
    * {@inheritDoc}
    *
    * @return {@inheritDoc}
@@ -340,7 +340,6 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
   boolean isWriteLocked() { return getWriteLockCounter(getLockThreadContext().getLock()).get() > 0; }
 
   /**
-   * /**
    * {@inheritDoc}
    *
    * @return {@inheritDoc}
@@ -359,7 +358,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    * @since 0.1.1
    */
   public
-  boolean isReadLockedCurrentThread() { return checkIsLockedCurrentThread(LOCK_STATE.get(), LockType.READ); }
+  boolean isReadLockedCurrentThread() { return checkIsLockedCurrentThread(LockType.READ); }
 
   /**
    * 检查当前线程是否持有写锁
@@ -369,18 +368,18 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    * @since 0.1.1
    */
   public
-  boolean isWriteLockedCurrentThread() { return checkIsLockedCurrentThread(LOCK_STATE.get(), LockType.WRITE); }
+  boolean isWriteLockedCurrentThread() { return checkIsLockedCurrentThread(LockType.WRITE); }
 
   /**
    * 检查是否有对应的锁在当前线程持有
    *
-   * @param l        锁记录
    * @param lockType 要检查的锁类型，包含其中一个则返回true
    *
    * @since 0.1.2
    */
   private
-  boolean checkIsLockedCurrentThread(@NotNull LinkedList<LockType> l, @NotNull LockType... lockType) {
+  boolean checkIsLockedCurrentThread(@NotNull LockType... lockType) {
+    List<LockType> l = LOCK_STATE.get();
     // 没有记录
     if ( l == null )
       return false;
