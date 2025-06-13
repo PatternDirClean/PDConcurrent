@@ -71,7 +71,7 @@ class ObjLock extends AbstractSyLock<Object> {
    * @since ObjLock 0.1.3
    */
   @SuppressWarnings("unchecked")
-  public
+  protected
   <R, E extends Throwable, E1 extends Throwable> R lockimpl(@NotNull LockType lockType, @NotNull trySupplier<R, E> run,
                                                             @Nullable tryFunction<E, R, E1> catchby,
                                                             @Nullable Function<R, R> finaby) throws E1

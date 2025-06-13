@@ -168,9 +168,8 @@ class AbstractSyLock<T> implements SyLock {
    * @param lockThreadContext 新的默认上下文参数
    */
   public
-  void setDefaultLockThreadContext(@NotNull LockThreadContext<T> lockThreadContext) {
-    this.defaultLockThreadContext = lockThreadContext;
-  }
+  void setDefaultLockThreadContext(@NotNull LockThreadContext<T> lockThreadContext)
+  { this.defaultLockThreadContext = lockThreadContext; }
 
   /** 获取当前默认上下文参数 */
   @NotNull

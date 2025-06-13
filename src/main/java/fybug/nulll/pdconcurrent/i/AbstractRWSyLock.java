@@ -121,7 +121,7 @@ class AbstractRWSyLock<T> extends AbstractSyLock<T> {
    *
    * @implSpec 在此处实现上锁功能，实现时应该支持根据上下文选择是否使用可以被线程中断的上锁方式
    */
-  protected abstract
+  public abstract
   void lock(@NotNull LockType lockType);
 
   /**
@@ -133,7 +133,7 @@ class AbstractRWSyLock<T> extends AbstractSyLock<T> {
    *
    * @implSpec 在此处实现尝试上锁功能，实现时应该支持上下文参数
    */
-  protected abstract
+  public abstract
   boolean trylock(@NotNull LockType lockType);
 
   /**

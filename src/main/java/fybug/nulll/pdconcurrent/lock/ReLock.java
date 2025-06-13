@@ -77,7 +77,7 @@ class ReLock extends AbstractRWSyLock<ReentrantLock> {
    */
   @SneakyThrows
   @Override
-  protected
+  public
   void lock(@NotNull LockType lockType) {
     var c = getLockThreadContext();
     if ( lockType != LockType.NOLOCK ) {
@@ -100,7 +100,7 @@ class ReLock extends AbstractRWSyLock<ReentrantLock> {
    */
   @SneakyThrows
   @Override
-  protected
+  public
   boolean trylock(@NotNull LockType lockType) {
     var c = getLockThreadContext();
     var t = c.getTryTimeout();

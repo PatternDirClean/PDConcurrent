@@ -155,7 +155,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
    */
   @SneakyThrows
   @Override
-  protected
+  public
   void lock(@NotNull LockType lockType) {
     var c = getLockThreadContext();
     // 检查锁类型进行上锁，并更新对应锁计数
@@ -194,7 +194,7 @@ class RWLock extends AbstractRWSyLock<ReentrantReadWriteLock> {
   @SuppressWarnings("ConstantValue")
   @SneakyThrows
   @Override
-  protected
+  public
   boolean trylock(@NotNull LockType lockType) {
     // 是否成功
     boolean success = false;
